@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Painel de Gestão - PROCISA</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="config.js"></script>
+</head>
+<body class="bg-slate-50 min-h-screen text-slate-800">
+
+    <!-- Navbar Superior -->
+    <header class="bg-blue-900 text-white p-4 shadow-md flex justify-between items-center">
+        <div class="font-bold text-lg tracking-wide">
+            PROCISA <span id="tagPerfil" class="font-normal text-xs bg-blue-700 px-2 py-1 rounded ml-2 text-blue-200">Carregando...</span>
+        </div>
+        <button onclick="sair()" class="text-sm bg-red-600 hover:bg-red-700 px-3 py-1.5 rounded border border-red-500 transition">
+            Sair
+        </button>
+    </header>
+
+    <!-- Área onde o conteúdo muda dependendo do perfil -->
+    <main id="conteudoDinamico" class="p-6 max-w-6xl mx-auto mt-4">
+        <div class="text-center text-slate-500 mt-10">Verificando credenciais...</div>
+    </main>
+
+    <script>
+        // Função para deslogar
+        async function sair() {
+            await supabaseClient.auth.signOut();
+            window.location.href = 'login.html';
+        }
+
+        // Função principal que roda ao abrir a página
+        async function carregarPainel() {
+            // 1. Verifica se tem alguém logado
+            const { data: { user } } = await supabaseClient.auth.getUser();
+            
+            if (!user) {
+                window.location.href = 'login.html'; // Expulsa se não estiver logado
+                return;
+            }
+
+            // 2. Busca o cargo (role) do usuário na tabela perfis
+            const { data: perfil, error } = await supabaseClient
+                .from('perfis')
+                .select('role, projeto_id')
+                .eq('id', user.id)
+                .single();
+
+            if (error || !perfil) {
+                document.getElementById('conteudoDinamico').innerHTML = `
+                    <div class="bg-red-100 p-4 rounded text-red-800 text-center">
+                        Seu usuário está sem perfil vinculado. Fale com o Master.
+                    </div>`;
+                return;
+            }
+
+            // 3. Atualiza a tag no cabeçalho
+            document.getElementById('tagPerfil').innerText = perfil.role.toUpperCase();
+
+            // 4. Desenha a tela baseada no perfil
+            const main = document.getElementById('conteudoDinamico');
+
+            if (perfil.role === 'master') {
+                main.innerHTML = `
+                    <h1 class="text-2xl font-bold mb-4">Painel Master (God Mode)</h1>
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                        <div class="bg-white p-6 rounded shadow border-l-4 border-blue-600">
+                            <h2 class="font-bold mb-2">Todas as Solicitações</h2>
+                            <p class="text-sm text-slate-600">Acesso global a todos os projetos.</p>
+                        </div>
+                        <div class="bg-white p-6 rounded shadow border-l-4 border-purple-600">
+                            <h2 class="font-bold mb-2">Gestão de Perfis</h2>
+                            <p class="text-sm text-slate-600">Criar coordenadores, editar, excluir.</p>
+                        </div>
+                        <div class="bg-white p-6 rounded shadow border-l-4 border-emerald-600">
+                            <h2 class="font-bold mb-2">Cadastros Base</h2>
+                            <p class="text-sm text-slate-600">Upload de planilha de campo.</p>
+                        </div>
+                    </div>
+                `;
+            } 
+            else if (perfil.role === 'coordenador') {
+                main.innerHTML = `
+                    <h1 class="text-2xl font-bold mb-4">Painel do Coordenador</h1>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div class="bg-white p-6 rounded shadow border-l-4 border-orange-500">
+                            <h2 class="font-bold mb-2">Aprovação Final</h2>
+                            <p class="text-sm text-slate-600">Solicitações validadas pelo ADM.</p>
+                        </div>
+                        <div class="bg-white p-6 rounded shadow border-l-4 border-slate-600">
+                            <h2 class="font-bold mb-2">Meus ADMs</h2>
+                            <p class="text-sm text-slate-600">Gerenciar equipe administrativa.</p>
+                        </div>
+                    </div>
+                `;
+            }
+            else if (perfil.role === 'adm') {
+                main.innerHTML = `
+                    <h1 class="text-2xl font-bold mb-4">Painel ADM</h1>
+                    <div class="bg-white p-6 rounded shadow border-l-4 border-blue-400 max-w-2xl">
+                        <h2 class="font-bold mb-2">Validação Primária</h2>
+                        <p class="text-sm text-slate-600 mb-4">Analise as solicitações do campo para o seu projeto.</p>
+                        <button class="bg-blue-100 text-blue-800 px-4 py-2 rounded text-sm font-semibold">Carregar Solicitações Pendentes</button>
+                    </div>
+                `;
+            }
+        }
+
+        carregarPainel();
+    </script>
+</body>
+</html>
