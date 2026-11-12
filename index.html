@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Solicitação de Campo - PROCISA</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- SDK Oficial do Supabase via CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="config.js"></script>
+</head>
+<body class="bg-slate-100 min-h-screen flex flex-col justify-between">
+
+    <!-- Cabeçalho -->
+    <header class="bg-blue-900 text-white p-4 shadow-md flex justify-between items-center">
+        <div class="font-bold text-lg tracking-wide">PROCISA <span class="font-normal text-blue-300">| Campo</span></div>
+        <a href="login.html" class="text-xs bg-blue-800 hover:bg-blue-700 px-3 py-2 rounded border border-blue-600 transition">
+            Acesso Corporativo &rarr;
+        </a>
+    </header>
+
+    <!-- Formulário Principal -->
+    <main class="flex-grow flex items-center justify-center p-4">
+        <div class="bg-white p-6 md:p-8 rounded-xl shadow-lg max-w-md w-full border border-slate-200">
+            <h1 class="text-2xl font-bold text-slate-800 mb-1">Nova Solicitação</h1>
+            <p class="text-sm text-slate-500 mb-6">Preencha os dados abaixo para registrar o atendimento.</p>
+
+            <form id="formSolicitacao" class="space-y-4">
+                <div>
+                    <label class="block text-sm font-medium text-slate-700 mb-1">Matrícula *</label>
+                    <input type="text" id="matricula" required placeholder="Ex: 12345"
+                        class="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-600 focus:outline-none">
+                </div>
+
+                <div>
+                    <label class="block text-sm font-medium text-slate-700 mb-1">Projeto *</label>
+                    <select id="projeto_id" required
+                        class="w-full px-4 py-2 border border-slate-300 rounded-lg bg-white focus:ring-2 focus:ring-blue-600 focus:outline-none">
+                        <option value="">Carregando projetos...</option>
+                    </select>
+                </div>
+
+                <div>
+                    <label class="block text-sm font-medium text-slate-700 mb-1">Observações / Detalhes</label>
+                    <textarea id="observacoes" rows="3" placeholder="Descreva a solicitação..."
+                        class="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-600 focus:outline-none"></textarea>
+                </div>
+
+                <button type="submit" id="btnEnviar"
+                    class="w-full bg-blue-700 hover:bg-blue-800 text-white font-semibold py-3 rounded-lg transition shadow">
+                    Enviar Solicitação
+                </button>
+            </form>
+
+            <!-- Mensagem de Feedback -->
+            <div id="feedback" class="mt-4 p-3 rounded-lg text-sm hidden"></div>
+        </div>
+    </main>
+
+    <footer class="text-center text-xs text-slate-400 py-4">
+        Sistema de Gestão de Campo - PROCISA
+    </footer>
+
+    <script>
+        // 1. Carrega os projetos no select ao abrir a página
+        async function carregarProjetos() {
+            const select = document.getElementById('projeto_id');
+            const { data, error } = await supabaseClient.from('projetos').select('id, nome').order('nome');
+            
+            if (error) {
+                select.innerHTML = '<option value="">Erro ao carregar projetos</option>';
+                return;
+            }
+
+            select.innerHTML = '<option value="">Selecione o projeto...</option>';
+            data.forEach(proj => {
+                select.innerHTML += `<option value="${proj.id}">${proj.nome}</option>`;
+            });
+        }
+
+        // 2. Envia a solicitação para o banco
+        document.getElementById('formSolicitacao').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const btn = document.getElementById('btnEnviar');
+            const feedback = document.getElementById('feedback');
+            
+            btn.disabled = true;
+            btn.innerText = 'Enviando...';
+            feedback.classList.add('hidden');
+
+            const matricula = document.getElementById('matricula').value.trim();
+            const projeto_id = document.getElementById('projeto_id').value;
+            const observacoes = document.getElementById('observacoes').value.trim();
+
+            const { error } = await supabaseClient
+                .from('solicitacoes')
+                .insert([{ matricula, projeto_id, observacoes }]);
+
+            btn.disabled = false;
+            btn.innerText = 'Enviar Solicitação';
+            feedback.classList.remove('hidden');
+
+            if (error) {
+                // Se a matrícula não existir na base_campo, o banco bloqueia pela Foreign Key!
+                if (error.code === '23503') {
+                    feedback.className = 'mt-4 p-3 rounded-lg text-sm bg-red-100 text-red-800 border border-red-300';
+                    feedback.innerText = 'Erro: Matrícula não encontrada na base de colaboradores.';
+                } else {
+                    feedback.className = 'mt-4 p-3 rounded-lg text-sm bg-red-100 text-red-800 border border-red-300';
+                    feedback.innerText = 'Erro ao enviar: ' + error.message;
+                }
+            } else {
+                feedback.className = 'mt-4 p-3 rounded-lg text-sm bg-green-100 text-green-800 border border-green-300';
+                feedback.innerText = 'Solicitação enviada com sucesso!';
+                document.getElementById('formSolicitacao').reset();
+            }
+        });
+
+        carregarProjetos();
+    </script>
+</body>
+</html>
