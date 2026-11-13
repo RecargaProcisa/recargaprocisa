@@ -3,385 +3,433 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Fila de Aprovação - PROCISA</title>
+    <title>Fila de Solicitações - PROCISA</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="config.js"></script>
 </head>
-<body class="bg-slate-50 min-h-screen text-slate-800">
+<body class="bg-slate-100 min-h-screen text-slate-800">
 
-    <header class="bg-blue-900 text-white p-4 shadow-md flex justify-between items-center">
-        <div class="font-bold text-lg tracking-wide">
-            PROCISA <span class="font-normal text-xs bg-blue-700 px-2 py-1 rounded ml-2 text-blue-200" id="headerRole">Fila de Aprovação</span>
-        </div>
-        <div class="flex gap-4">
-            <button onclick="carregarSolicitacoes()" class="text-sm bg-blue-800 hover:bg-blue-700 px-3 py-1.5 rounded transition">&#8635; Atualizar</button>
-            <a href="painel.html" class="text-sm bg-slate-700 hover:bg-slate-600 px-3 py-1.5 rounded border border-slate-500 transition">&larr; Voltar ao Painel</a>
+    <!-- Faixa Azul Padronizada -->
+    <header class="bg-blue-900 text-white px-6 py-4 shadow-lg border-b-4 border-blue-700">
+        <div class="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-3 items-center gap-4">
+            <div class="flex items-center gap-3 justify-center md:justify-start">
+                <span class="font-black text-xl tracking-wider text-blue-100">PROCISA</span>
+                <span id="badgePerfilHeader" class="text-xs bg-blue-700 px-3 py-1 rounded-full text-white font-bold uppercase">...</span>
+            </div>
+            <div class="text-center">
+                <h1 class="text-2xl font-extrabold tracking-widest uppercase text-white">GESTÃO DE RECARGAS</h1>
+                <p class="text-xs text-blue-200 font-medium tracking-wide mt-0.5">Gestor Luis Manuel Luviano Saldana</p>
+            </div>
+            <div class="flex gap-2 justify-center md:justify-end">
+                <a href="index.html?modo=manual" class="text-xs bg-emerald-600 hover:bg-emerald-500 px-3 py-2 rounded font-bold transition">
+                    + Solicitação Manual
+                </a>
+                <a href="painel.html" class="text-xs bg-slate-700 hover:bg-slate-600 px-4 py-2 rounded border border-slate-500 transition font-bold">
+                    &larr; Painel
+                </a>
+            </div>
         </div>
     </header>
 
-    <main class="p-6 max-w-7xl mx-auto mt-4">
-        <div class="bg-white p-6 rounded-xl shadow border border-slate-200 overflow-hidden flex flex-col">
-            <h2 class="text-xl font-bold text-blue-900 mb-4">Solicitações de Recarga</h2>
-            
+    <main class="p-6 max-w-7xl mx-auto">
+        
+        <!-- Filtros Rápidos de Status e Projeto -->
+        <div class="bg-white p-4 rounded-2xl shadow-sm border border-slate-200 mb-6 flex flex-wrap justify-between items-center gap-4">
+            <div class="flex flex-wrap gap-2" id="botoesFiltroStatus">
+                <button onclick="filtrarStatus('TODOS')" class="btn-status bg-blue-900 text-white px-3.5 py-2 rounded-lg text-xs font-extrabold"> Todas</button>
+                <button onclick="filtrarStatus('NOVA')" class="btn-status bg-slate-100 text-slate-700 hover:bg-slate-200 px-3.5 py-2 rounded-lg text-xs font-extrabold">🆕 Novas (ADM)</button>
+                <button onclick="filtrarStatus('AGUARDANDO_GESTAO')" class="btn-status bg-slate-100 text-slate-700 hover:bg-slate-200 px-3.5 py-2 rounded-lg text-xs font-extrabold">🟠 Aguard. Coordenação</button>
+                <button onclick="filtrarStatus('AGUARDANDO_RECARGA')" class="btn-status bg-slate-100 text-slate-700 hover:bg-slate-200 px-3.5 py-2 rounded-lg text-xs font-extrabold">🟣 Aguard. Vale Card</button>
+                <button onclick="filtrarStatus('PENDENTE')" class="btn-status bg-slate-100 text-slate-700 hover:bg-slate-200 px-3.5 py-2 rounded-lg text-xs font-extrabold">⚠️ Pendentes</button>
+                <button onclick="filtrarStatus('RECARGA_REALIZADA')" class="btn-status bg-slate-100 text-slate-700 hover:bg-slate-200 px-3.5 py-2 rounded-lg text-xs font-extrabold">✅ Realizadas</button>
+                <button onclick="filtrarStatus('RECUSADA')" class="btn-status bg-slate-100 text-slate-700 hover:bg-slate-200 px-3.5 py-2 rounded-lg text-xs font-extrabold">❌ Recusadas</button>
+            </div>
+
+            <div class="flex items-center gap-2">
+                <input type="text" id="buscaPlacaMatricula" oninput="renderizarTabela()" placeholder="Buscar Placa ou Matrícula..."
+                    class="px-3 py-2 border border-slate-300 rounded-lg text-xs font-bold focus:outline-none focus:ring-2 focus:ring-blue-600">
+                <button onclick="carregarSolicitacoes()" class="bg-slate-200 hover:bg-slate-300 px-3 py-2 rounded-lg text-xs font-bold">🔄 Atualizar</button>
+            </div>
+        </div>
+
+        <!-- Tabela Principal -->
+        <div class="bg-white rounded-2xl shadow-lg border border-slate-200 overflow-hidden">
             <div class="overflow-x-auto">
                 <table class="w-full text-left border-collapse">
                     <thead>
-                        <tr class="bg-slate-100 border-b border-slate-200 text-slate-600 text-sm">
-                            <th class="p-3">Data</th>
-                            <th class="p-3">Matrícula</th>
-                            <th class="p-3">Placa</th>
-                            <th class="p-3">KM Percorrido</th>
-                            <th class="p-3">Status</th>
-                            <th class="p-3 text-center">Ação</th>
+                        <tr class="bg-slate-100 border-b border-slate-200 text-slate-700 text-xs uppercase">
+                            <th class="p-4 font-extrabold">Data / Hora</th>
+                            <th class="p-4 font-extrabold">Projeto</th>
+                            <th class="p-4 font-extrabold">Colaborador / Mat.</th>
+                            <th class="p-4 font-extrabold">Placa</th>
+                            <th class="p-4 font-extrabold">Parâmetro KM</th>
+                            <th class="p-4 font-extrabold">Valor / Motivo</th>
+                            <th class="p-4 font-extrabold">Status Atual</th>
+                            <th class="p-4 text-center font-extrabold">Ação</th>
                         </tr>
                     </thead>
-                    <tbody id="tabelaSolicitacoes" class="text-sm">
-                        <tr><td colspan="6" class="p-4 text-center text-slate-500">Carregando fila...</td></tr>
+                    <tbody id="tabelaSolicitacoes" class="text-sm divide-y divide-slate-200">
+                        <tr><td colspan="8" class="p-8 text-center text-slate-500">Carregando fila de solicitações...</td></tr>
                     </tbody>
                 </table>
             </div>
         </div>
     </main>
 
-    <!-- Modal de Análise -->
-    <div id="modalAnalise" class="fixed inset-0 bg-black bg-opacity-60 hidden flex items-center justify-center p-4 z-50 overflow-y-auto">
-        <div class="bg-white rounded-xl shadow-2xl max-w-4xl w-full max-h-[90vh] flex flex-col">
-            <div class="p-4 border-b border-slate-200 flex justify-between items-center bg-slate-50 rounded-t-xl">
-                <h3 class="text-lg font-bold text-blue-900">Analisar Solicitação</h3>
-                <button onclick="fecharModal()" class="text-slate-500 hover:text-red-500 font-bold text-xl">&times;</button>
-            </div>
+    <!-- MODAL COMPLETO DE AUDITORIA E TRATATIVA -->
+    <div id="modalAnalise" class="hidden fixed inset-0 bg-black/70 z-50 flex items-center justify-center p-4 overflow-y-auto">
+        <div class="bg-white rounded-2xl max-w-4xl w-full p-6 shadow-2xl my-8 max-h-[92vh] overflow-y-auto">
             
-            <div class="p-6 overflow-y-auto flex-grow">
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <!-- Coluna de Dados -->
-                    <div>
-                        <h4 class="font-semibold text-slate-700 mb-3 border-b pb-1">Dados da Solicitação</h4>
-                        <div class="text-sm space-y-2 text-slate-600" id="modalDados">
-                            <!-- Preenchido via JS -->
-                        </div>
+            <div class="flex justify-between items-start border-b pb-3 mb-4">
+                <div>
+                    <span id="modalStatusBadge" class="text-xs font-extrabold px-2.5 py-1 rounded uppercase">STATUS</span>
+                    <h2 id="modalTitulo" class="text-xl font-black text-blue-900 mt-1">Análise de Solicitação</h2>
+                </div>
+                <button onclick="fecharModal()" class="text-slate-400 hover:text-slate-700 text-2xl font-black">&times;</button>
+            </div>
 
-                        <div id="alertaKmBox" class="mt-4 p-3 bg-orange-100 border border-orange-300 rounded text-orange-800 text-sm hidden">
-                            <strong class="block mb-1">&#9888; Alerta de Quilometragem</strong>
-                            Este veículo rodou menos de 260km desde a última recarga. É obrigatório justificar a aprovação.
-                        </div>
+            <!-- Resumo de Dados e Rastro de Auditoria -->
+            <div id="modalResumoDados" class="grid grid-cols-1 md:grid-cols-3 gap-3 bg-slate-50 p-4 rounded-xl border border-slate-200 text-xs mb-4"></div>
+
+            <!-- Alerta de Exceção de KM (< 260 km) -->
+            <div id="modalAlertaKm" class="hidden p-3.5 rounded-xl bg-red-100 border-2 border-red-400 text-red-900 text-xs font-bold mb-4">
+                🚨 ALERTA FORA DE PARÂMETRO: Este veículo rodou menos de 260 KM desde o último abastecimento! Para aprovar, é obrigatório preencher a Justificativa de Exceção de KM abaixo.
+            </div>
+
+            <!-- As 4 Fotos Obrigatórias (Clique amplia em nova guia) -->
+            <h3 class="text-xs font-extrabold uppercase text-slate-500 mb-2">Evidências Fotográficas (Clique na foto para ampliar)</h3>
+            <div id="modalGaleriaFotos" class="grid grid-cols-2 md:grid-cols-4 gap-3 mb-6"></div>
+
+            <!-- Área de Preenchimento ADM / Bypass Coordenador -->
+            <div id="blocoCamposAdm" class="space-y-3 bg-blue-50/60 p-4 rounded-xl border border-blue-200 mb-4 hidden">
+                <h4 class="text-xs font-black uppercase text-blue-900">Dados de Validação Primária (ADM / Coordenação)</h4>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+                    <div>
+                        <label class="block text-xs font-bold text-slate-700 mb-1">Motivo da Recarga *</label>
+                        <input type="text" id="inputMotivoRecarga" placeholder="Ex: Rota semanal de atendimento"
+                            class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm font-semibold bg-white">
                     </div>
-
-                    <!-- Coluna de Fotos -->
                     <div>
-                        <h4 class="font-semibold text-slate-700 mb-3 border-b pb-1">Evidências (Fotos)</h4>
-                        <div class="grid grid-cols-2 gap-2" id="modalFotos">
-                            <!-- Preenchido via JS -->
-                        </div>
+                        <label class="block text-xs font-bold text-slate-700 mb-1">Saldo Solicitado (R$) *</label>
+                        <input type="number" step="0.01" id="inputSaldoSolicitado" placeholder="Ex: 250.00"
+                            class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm font-bold bg-white">
                     </div>
                 </div>
-
-                <!-- Formulário de Tratativa (Muda conforme o perfil) -->
-                <div class="mt-6 border-t pt-4">
-                    <h4 class="font-semibold text-slate-700 mb-3">Tratativa</h4>
-                    <form id="formTratativa" class="space-y-4">
-                        <input type="hidden" id="solicitacaoId">
-                        
-                        <!-- Campos que o ADM preenche -->
-                        <div id="camposAdm" class="grid grid-cols-1 md:grid-cols-2 gap-4 hidden">
-                            <div>
-                                <label class="block text-sm font-medium text-slate-700 mb-1">Motivo da Recarga *</label>
-                                <input type="text" id="motivo_recarga" class="w-full px-3 py-2 border border-slate-300 rounded focus:ring-blue-600 focus:outline-none">
-                            </div>
-                            <div>
-                                <label class="block text-sm font-medium text-slate-700 mb-1">Saldo Solicitado (R$) *</label>
-                                <input type="number" step="0.01" id="saldo_solicitado" class="w-full px-3 py-2 border border-slate-300 rounded focus:ring-blue-600 focus:outline-none">
-                            </div>
-                            <div class="md:col-span-2 hidden" id="boxJustificativaKm">
-                                <label class="block text-sm font-medium text-orange-700 mb-1">Justificativa de KM (Obrigatório) *</label>
-                                <textarea id="justificativa_km_adm" rows="2" class="w-full px-3 py-2 border border-orange-300 rounded focus:ring-orange-600 focus:outline-none bg-orange-50"></textarea>
-                            </div>
-                        </div>
-
-                        <!-- Campos para Devolução/Recusa -->
-                        <div id="boxMotivoRecusa" class="hidden">
-                            <label class="block text-sm font-medium text-red-700 mb-1">Motivo da Recusa ou Pendência *</label>
-                            <textarea id="motivo_pendencia_recusa" rows="2" class="w-full px-3 py-2 border border-red-300 rounded focus:ring-red-600 focus:outline-none"></textarea>
-                        </div>
-
-                        <!-- Botões de Ação Dinâmicos -->
-                        <div class="flex flex-wrap gap-3 mt-4 pt-4 border-t" id="modalAcoes">
-                            <!-- Preenchido via JS -->
-                        </div>
-                    </form>
+                <div id="divJustificativaKm" class="hidden">
+                    <label class="block text-xs font-extrabold text-red-700 mb-1">Justificativa Obrigatória de Exceção (< 260 KM) *</label>
+                    <textarea id="inputJustificativaKm" rows="2" placeholder="Explique por que a recarga está sendo autorizada antes dos 260 km..."
+                        class="w-full px-3 py-2 border-2 border-red-300 rounded-lg text-sm bg-white"></textarea>
                 </div>
             </div>
+
+            <!-- Campo de Observação / Motivo para Pendência ou Recusa -->
+            <div class="mb-6">
+                <label class="block text-xs font-bold text-slate-700 mb-1">Motivo de Pendência / Recusa (Obrigatório se colocar em Pendente ou Recusar)</label>
+                <input type="text" id="inputMotivoPendenciaRecusa" placeholder="Ex: Foto do cartão ilegível / KM incorreto..."
+                    class="w-full px-3 py-2.5 border border-slate-300 rounded-lg text-sm">
+            </div>
+
+            <!-- Botões Dinâmicos da Máquina de Estados -->
+            <div id="modalBotoesAcao" class="flex flex-wrap justify-end gap-3 pt-4 border-t border-slate-200"></div>
         </div>
     </div>
 
     <script>
-        let usuarioAtual = null;
-        let solicitacaoEmAnalise = null;
+        let usuarioLogado = null;
+        let listaCompleta = [];
+        let filtroAtual = 'TODOS';
+        let solicitacaoAberta = null;
 
-        async function checarAcesso() {
+        async function iniciar() {
             const { data: { user } } = await supabaseClient.auth.getUser();
-            if (!user) {
-                window.location.href = 'login.html';
-                return;
-            }
+            if (!user) { window.location.href = 'login.html'; return; }
 
-            const { data: perfil } = await supabaseClient.from('perfis_usuarios').select('perfil, projeto_id').eq('id', user.id).single();
-            if (!perfil) {
-                window.location.href = 'login.html';
-                return;
-            }
-            
-            usuarioAtual = { ...user, role: perfil.perfil, projeto_id: perfil.projeto_id };
-            document.getElementById('headerRole').innerText = usuarioAtual.role.toUpperCase();
-            
-            carregarSolicitacoes();
+            const { data: perfil } = await supabaseClient.from('perfis_usuarios').select('*').eq('id', user.id).single();
+            if (!perfil) { window.location.href = 'painel.html'; return; }
+
+            usuarioLogado = {
+                id: user.id,
+                nome: perfil.nome,
+                role: perfil.perfil,
+                projetos: perfil.projetos || []
+            };
+
+            document.getElementById('badgePerfilHeader').innerText = `${usuarioLogado.role} (${usuarioLogado.nome})`;
+            await carregarSolicitacoes();
         }
 
         async function carregarSolicitacoes() {
-            const tbody = document.getElementById('tabelaSolicitacoes');
-            tbody.innerHTML = '<tr><td colspan="6" class="p-4 text-center text-slate-500">Atualizando fila...</td></tr>';
-            
-            // Busca básica
-            let query = supabaseClient.from('solicitacoes_recarga').select('*, projetos(nome)').order('criado_em', { ascending: false });
-
-            // Filtros baseados no Perfil
-            if (usuarioAtual.role === 'ADM') {
-                // ADM vê apenas as do seu projeto
-                query = query.eq('projeto_id', usuarioAtual.projeto_id);
-            } 
-            else if (usuarioAtual.role === 'GESTAO_CAMPO') {
-                // Coordenador vê as do seu projeto E as que estão aguardando gestão global
-                // No Supabase JS, um 'or' complexo com inner join pode ser chato, vamos filtrar no JS para simplificar
-                // Trazemos tudo do projeto dele + todas aguardando gestão
-                query = query.or(\`projeto_id.eq.\${usuarioAtual.projeto_id},status.eq.AGUARDANDO_GESTAO\`);
-            }
-            // MASTER vê tudo
-
-            const { data, error } = await query;
+            const { data, error } = await supabaseClient
+                .from('solicitacoes_recarga')
+                .select('*')
+                .order('criado_em', { ascending: false });
 
             if (error) {
-                tbody.innerHTML = '<tr><td colspan="6" class="p-4 text-center text-red-500">Erro ao carregar fila.</td></tr>';
-                console.error(error);
+                alert('Erro ao carregar solicitações: ' + error.message);
                 return;
             }
 
-            if (!data || data.length === 0) {
-                tbody.innerHTML = '<tr><td colspan="6" class="p-4 text-center text-slate-500">Nenhuma solicitação encontrada.</td></tr>';
+            // Regras de Visibilidade por Perfil:
+            // - ADM: Vê apenas solicitações dos seus projetos vinculados
+            // - GESTAO_CAMPO: Vê todas AGUARDANDO_GESTAO (global) + todas dos seus projetos vinculados (para Bypass ADM e acompanhamento)
+            // - MASTER: Vê todas de todos os projetos
+            listaCompleta = (data || []).filter(s => {
+                if (usuarioLogado.role === 'MASTER') return true;
+                if (usuarioLogado.role === 'ADM') {
+                    return usuarioLogado.projetos.includes(s.projeto);
+                }
+                if (usuarioLogado.role === 'GESTAO_CAMPO') {
+                    return s.status === 'AGUARDANDO_GESTAO' || usuarioLogado.projetos.includes(s.projeto);
+                }
+                return false;
+            });
+
+            renderizarTabela();
+        }
+
+        function filtrarStatus(st) {
+            filtroAtual = st;
+            document.querySelectorAll('.btn-status').forEach(b => {
+                b.className = 'btn-status bg-slate-100 text-slate-700 hover:bg-slate-200 px-3.5 py-2 rounded-lg text-xs font-extrabold';
+            });
+            event.target.className = 'btn-status bg-blue-900 text-white px-3.5 py-2 rounded-lg text-xs font-extrabold';
+            renderizarTabela();
+        }
+
+        function renderizarTabela() {
+            const tbody = document.getElementById('tabelaSolicitacoes');
+            const termo = document.getElementById('buscaPlacaMatricula').value.trim().toUpperCase();
+
+            const filtradas = listaCompleta.filter(s => {
+                const bateStatus = (filtroAtual === 'TODOS') || (s.status === filtroAtual);
+                const bateTermo = !termo || 
+                    (s.placa && s.placa.toUpperCase().includes(termo)) || 
+                    (s.matricula && s.matricula.toUpperCase().includes(termo)) ||
+                    (s.nome_solicitante && s.nome_solicitante.toUpperCase().includes(termo));
+                return bateStatus && bateTermo;
+            });
+
+            if (filtradas.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="8" class="p-8 text-center text-slate-400 font-semibold">Nenhuma solicitação encontrada para este filtro.</td></tr>';
                 return;
             }
 
-            tbody.innerHTML = data.map(s => {
-                const dataFormatada = new Date(s.criado_em).toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' });
-                
-                // Formatação do Status
-                let statusColor = 'bg-slate-100 text-slate-700';
-                if (s.status === 'NOVA') statusColor = 'bg-blue-100 text-blue-800';
-                if (s.status === 'PENDENTE') statusColor = 'bg-yellow-100 text-yellow-800';
-                if (s.status === 'RECUSADA' || s.status === 'CANCELADA') statusColor = 'bg-red-100 text-red-800';
-                if (s.status === 'AGUARDANDO_GESTAO') statusColor = 'bg-purple-100 text-purple-800';
-                if (s.status === 'AGUARDANDO_RECARGA') statusColor = 'bg-orange-100 text-orange-800';
-                if (s.status === 'RECARGA_REALIZADA') statusColor = 'bg-green-100 text-green-800';
+            tbody.innerHTML = filtradas.map(s => {
+                const kmForaParametro = s.delta_km < 260;
+                const tagKm = kmForaParametro
+                    ? `<span class="bg-red-100 text-red-800 border border-red-300 px-2 py-0.5 rounded text-xs font-black">🚨 ${s.delta_km} km (<260)</span>`
+                    : `<span class="bg-emerald-100 text-emerald-800 px-2 py-0.5 rounded text-xs font-bold">✅ ${s.delta_km} km</span>`;
 
-                const deltaKm = s.km_atual - s.km_ultimo_abastecimento;
-                const kmAlertaHtml = s.alerta_km ? \`<span class="text-orange-600 font-bold ml-1" title="Abaixo de 260km">&#9888;</span>\` : '';
+                const coresStatus = {
+                    'NOVA': 'bg-blue-100 text-blue-900 border-blue-300',
+                    'AGUARDANDO_GESTAO': 'bg-orange-100 text-orange-900 border-orange-300',
+                    'AGUARDANDO_RECARGA': 'bg-purple-100 text-purple-900 border-purple-300',
+                    'RECARGA_REALIZADA': 'bg-emerald-100 text-emerald-900 border-emerald-300',
+                    'PENDENTE': 'bg-amber-100 text-amber-900 border-amber-300',
+                    'RECUSADA': 'bg-red-100 text-red-900 border-red-300'
+                };
 
-                return \`
-                    <tr class="border-b border-slate-100 hover:bg-slate-50 transition">
-                        <td class="p-3">\${dataFormatada}</td>
-                        <td class="p-3 font-semibold text-slate-700">\${s.matricula_solicitante}</td>
-                        <td class="p-3">\${s.placa}</td>
-                        <td class="p-3">\${deltaKm} km \${kmAlertaHtml}</td>
-                        <td class="p-3"><span class="px-2 py-0.5 rounded text-xs font-semibold \${statusColor}">\${s.status.replace('_', ' ')}</span></td>
-                        <td class="p-3 text-center">
-                            <button onclick='abrirModal(\${JSON.stringify(s)})' class="bg-blue-600 hover:bg-blue-700 text-white px-3 py-1 rounded text-xs shadow transition">Analisar</button>
+                return `
+                    <tr class="hover:bg-slate-50 transition">
+                        <td class="p-4 text-xs text-slate-500 font-medium">${new Date(s.criado_em).toLocaleString('pt-BR')}</td>
+                        <td class="p-4 font-extrabold text-blue-900">${s.projeto || '-'}</td>
+                        <td class="p-4">
+                            <div class="font-bold text-slate-800">${s.nome_solicitante || '-'}</div>
+                            <div class="text-xs text-slate-500">Mat: <b>${s.matricula}</b></div>
+                        </td>
+                        <td class="p-4 font-black tracking-wider text-slate-800">${s.placa || '-'}</td>
+                        <td class="p-4">
+                            ${tagKm}
+                            <div class="text-[11px] text-slate-400 mt-0.5">${s.km_ultimo} &rarr; ${s.km_atual}</div>
+                        </td>
+                        <td class="p-4 text-xs">
+                            ${s.saldo_solicitado ? `<div class="font-black text-emerald-700 text-sm">R$ ${s.saldo_solicitado}</div>` : '<span class="text-slate-400">Aguard. ADM</span>'}
+                            ${s.motivo_recarga ? `<div class="text-slate-600 truncate max-w-[160px]">${s.motivo_recarga}</div>` : ''}
+                        </td>
+                        <td class="p-4">
+                            <span class="px-2.5 py-1 rounded-full text-xs font-extrabold border ${coresStatus[s.status] || 'bg-slate-100'}">${s.status}</span>
+                        </td>
+                        <td class="p-4 text-center">
+                            <button onclick='abrirModal(${JSON.stringify(s)})' class="bg-blue-800 hover:bg-blue-900 text-white px-4 py-2 rounded-lg text-xs font-bold shadow transition">
+                                Analisar / Tratar
+                            </button>
                         </td>
                     </tr>
-                \`;
+                `;
             }).join('');
         }
 
-        function abrirModal(solicitacao) {
-            solicitacaoEmAnalise = solicitacao;
-            document.getElementById('solicitacaoId').value = solicitacao.id;
-            
-            // 1. Preencher Dados
-            const deltaKm = solicitacao.km_atual - solicitacao.km_ultimo_abastecimento;
-            document.getElementById('modalDados').innerHTML = \`
-                <p><strong>Projeto:</strong> \${solicitacao.projetos ? solicitacao.projetos.nome : '-'}</p>
-                <p><strong>Matrícula:</strong> \${solicitacao.matricula_solicitante}</p>
-                <p><strong>Placa:</strong> \${solicitacao.placa}</p>
-                <p><strong>KM Último:</strong> \${solicitacao.km_ultimo_abastecimento}</p>
-                <p><strong>KM Atual:</strong> \${solicitacao.km_atual}</p>
-                <p><strong>Diferença Rodada:</strong> \${deltaKm} km</p>
-                \${solicitacao.motivo_recarga ? \`<p class="mt-2 text-blue-700"><strong>Motivo ADM:</strong> \${solicitacao.motivo_recarga}</p>\` : ''}
-                \${solicitacao.saldo_solicitado ? \`<p class="text-blue-700"><strong>Saldo Solicitado:</strong> R$ \${solicitacao.saldo_solicitado}</p>\` : ''}
-                \${solicitacao.justificativa_km_adm ? \`<p class="text-orange-700"><strong>Justificativa KM (ADM):</strong> \${solicitacao.justificativa_km_adm}</p>\` : ''}
-                \${solicitacao.motivo_pendencia_recusa ? \`<p class="text-red-600 mt-2"><strong>Histórico de Recusa/Pendência:</strong> \${solicitacao.motivo_pendencia_recusa}</p>\` : ''}
-            \`;
-
-            // 2. Preencher Fotos
-            const renderFoto = (url, titulo) => url ? \`
-                <a href="\${url}" target="_blank" class="block border rounded overflow-hidden hover:shadow-md transition">
-                    <div class="bg-slate-100 text-xs text-center py-1 font-semibold text-slate-600">\${titulo}</div>
-                    <img src="\${url}" alt="\${titulo}" class="w-full h-24 object-cover">
-                </a>\` : '';
-
-            document.getElementById('modalFotos').innerHTML = \`
-                \${renderFoto(solicitacao.foto_painel, 'Painel')}
-                \${renderFoto(solicitacao.foto_mapa_bordo, 'Mapa de Bordo')}
-                \${renderFoto(solicitacao.foto_cartao, 'Cartão')}
-                \${renderFoto(solicitacao.foto_carro_adesivado, 'Carro')}
-            \`;
-
-            // 3. Lógica de Campos de Tratativa e Botões
-            const boxAlerta = document.getElementById('alertaKmBox');
-            const boxCamposAdm = document.getElementById('camposAdm');
-            const boxJustificativa = document.getElementById('boxJustificativaKm');
-            const boxRecusa = document.getElementById('boxMotivoRecusa');
-            const modalAcoes = document.getElementById('modalAcoes');
-
-            // Reset UI
-            boxAlerta.classList.add('hidden');
-            boxCamposAdm.classList.add('hidden');
-            boxJustificativa.classList.add('hidden');
-            boxRecusa.classList.add('hidden');
-            document.getElementById('formTratativa').reset();
-
-            // Lógica de Permissões e Status
-            let htmlBotoes = '';
-
-            if ((usuarioAtual.role === 'ADM' || usuarioAtual.role === 'GESTAO_CAMPO') && (solicitacao.status === 'NOVA' || solicitacao.status === 'PENDENTE')) {
-                // ADM ou Bypass do Coordenador agindo como ADM
-                boxCamposAdm.classList.remove('hidden');
-                document.getElementById('motivo_recarga').required = true;
-                document.getElementById('saldo_solicitado').required = true;
-
-                if (solicitacao.alerta_km) {
-                    boxAlerta.classList.remove('hidden');
-                    boxJustificativa.classList.remove('hidden');
-                    document.getElementById('justificativa_km_adm').required = true;
-                } else {
-                    document.getElementById('justificativa_km_adm').required = false;
-                }
-
-                htmlBotoes += \`<button type="button" onclick="processarSolicitacao('aprovar_adm')" class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded font-semibold transition flex-grow">Aprovar p/ Gestão</button>\`;
-                
-                // Se for coordenador fazendo bypass, permite aprovar direto
-                if (usuarioAtual.role === 'GESTAO_CAMPO') {
-                    htmlBotoes += \`<button type="button" onclick="processarSolicitacao('bypass_coordenador')" class="bg-purple-600 hover:bg-purple-700 text-white px-4 py-2 rounded font-semibold transition flex-grow">Aprovação Direta (Bypass)</button>\`;
-                }
-
-                htmlBotoes += \`<button type="button" onclick="mostrarRecusa('pendenciar')" class="bg-yellow-500 hover:bg-yellow-600 text-white px-4 py-2 rounded font-semibold transition">Devolver (Pendência)</button>\`;
-                htmlBotoes += \`<button type="button" onclick="mostrarRecusa('recusar')" class="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded font-semibold transition">Recusar</button>\`;
-            } 
-            else if (usuarioAtual.role === 'GESTAO_CAMPO' && solicitacao.status === 'AGUARDANDO_GESTAO') {
-                // Coordenador validando o que o ADM fez
-                htmlBotoes += \`<button type="button" onclick="processarSolicitacao('aprovar_gestao')" class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded font-semibold transition flex-grow">Validar p/ Vale Card</button>\`;
-                htmlBotoes += \`<button type="button" onclick="mostrarRecusa('recusar')" class="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded font-semibold transition">Recusar</button>\`;
-            }
-            else if (usuarioAtual.role === 'MASTER' && solicitacao.status === 'AGUARDANDO_RECARGA') {
-                // Master finalizando a recarga
-                htmlBotoes += \`<button type="button" onclick="processarSolicitacao('finalizar_recarga')" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded font-semibold transition flex-grow">Confirmar Saldo Inserido</button>\`;
-                htmlBotoes += \`<button type="button" onclick="mostrarRecusa('cancelar')" class="bg-slate-600 hover:bg-slate-700 text-white px-4 py-2 rounded font-semibold transition">Cancelar Processo</button>\`;
-            } else {
-                htmlBotoes = \`<p class="text-sm text-slate-500 italic w-full text-center">Nenhuma ação disponível para o seu perfil no status atual.</p>\`;
-            }
-
-            modalAcoes.innerHTML = htmlBotoes;
+        window.abrirModal = function(s) {
+            solicitacaoAberta = s;
             document.getElementById('modalAnalise').classList.remove('hidden');
-        }
+            document.getElementById('modalStatusBadge').innerText = s.status;
+            document.getElementById('modalTitulo').innerText = `Placa ${s.placa} — Projeto ${s.projeto}`;
 
-        function fecharModal() {
-            document.getElementById('modalAnalise').classList.add('hidden');
-            solicitacaoEmAnalise = null;
-        }
+            // Preenche Resumo e Auditoria Completa
+            document.getElementById('modalResumoDados').innerHTML = `
+                <div>
+                    <p class="text-slate-400 font-bold uppercase">Solicitante (Campo)</p>
+                    <p class="font-extrabold text-slate-800 text-sm">${s.nome_solicitante} (Mat: ${s.matricula})</p>
+                    <p class="text-slate-500">Origem: ${s.origem_lancamento || 'CAMPO'}</p>
+                    <p class="text-slate-500">KM: ${s.km_ultimo} &rarr; ${s.km_atual} (<b>${s.delta_km} km</b>)</p>
+                </div>
+                <div>
+                    <p class="text-slate-400 font-bold uppercase">Validação ADM</p>
+                    <p class="font-bold text-slate-800">${s.adm_aprovador_nome || 'Pendente'}</p>
+                    <p class="text-slate-600">Motivo: <b>${s.motivo_recarga || '-'}</b></p>
+                    <p class="text-emerald-700 font-extrabold">Valor: R$ ${s.saldo_solicitado || '-'}</p>
+                    ${s.justificativa_km ? `<p class="text-red-700 font-bold mt-1">Justif. KM: ${s.justificativa_km}</p>` : ''}
+                </div>
+                <div>
+                    <p class="text-slate-400 font-bold uppercase">Aprovação Coord. / Recarga</p>
+                    <p class="font-bold text-slate-800">Coord: ${s.gestor_aprovador_nome || 'Pendente'}</p>
+                    <p class="font-bold text-slate-800">Vale Card: ${s.recarga_aprovador_nome || 'Pendente'}</p>
+                    ${s.motivo_pendencia_recusa ? `<p class="text-amber-800 font-bold mt-1">Obs/Pendência: ${s.motivo_pendencia_recusa}</p>` : ''}
+                </div>
+            `;
 
-        function mostrarRecusa(tipo) {
-            document.getElementById('boxMotivoRecusa').classList.remove('hidden');
-            document.getElementById('motivo_pendencia_recusa').required = true;
-            
-            // Esconde os campos de ADM se for recusar para não obrigar preenchimento
-            document.getElementById('camposAdm').classList.add('hidden');
-            document.getElementById('motivo_recarga').required = false;
-            document.getElementById('saldo_solicitado').required = false;
-            document.getElementById('justificativa_km_adm').required = false;
+            // Fotos
+            const fotos = [
+                { titulo: '1. Painel (KM)', url: s.foto_painel },
+                { titulo: '2. Mapa de Bordo', url: s.foto_mapa },
+                { titulo: '3. Cartão Vale Card', url: s.foto_cartao },
+                { titulo: '4. Carro Adesivado', url: s.foto_carro }
+            ];
+            document.getElementById('modalGaleriaFotos').innerHTML = fotos.map(f => `
+                <a href="${f.url}" target="_blank" class="block border border-slate-200 rounded-xl overflow-hidden bg-slate-100 hover:ring-2 hover:ring-blue-600 transition">
+                    <img src="${f.url}" alt="${f.titulo}" class="w-full h-32 object-cover">
+                    <div class="p-2 text-center text-xs font-bold text-slate-700 bg-white">${f.titulo} 🔍</div>
+                </a>
+            `).join('');
 
-            const modalAcoes = document.getElementById('modalAcoes');
-            if (tipo === 'pendenciar') {
-                modalAcoes.innerHTML = \`
-                    <button type="button" onclick="processarSolicitacao('efetivar_pendencia')" class="bg-yellow-600 hover:bg-yellow-700 text-white px-4 py-2 rounded font-semibold transition flex-grow">Confirmar Pendência</button>
-                    <button type="button" onclick="abrirModal(solicitacaoEmAnalise)" class="bg-slate-200 text-slate-700 px-4 py-2 rounded transition">Cancelar</button>
-                \`;
-            } else {
-                modalAcoes.innerHTML = \`
-                    <button type="button" onclick="processarSolicitacao('efetivar_recusa')" class="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded font-semibold transition flex-grow">Confirmar Recusa Definitiva</button>
-                    <button type="button" onclick="abrirModal(solicitacaoEmAnalise)" class="bg-slate-200 text-slate-700 px-4 py-2 rounded transition">Cancelar</button>
-                \`;
+            // Controle de Alerta KM (< 260)
+            const kmBaixo = s.delta_km < 260;
+            document.getElementById('modalAlertaKm').classList.toggle('hidden', !kmBaixo);
+            document.getElementById('divJustificativaKm').classList.toggle('hidden', !kmBaixo);
+
+            // Preenche inputs com valores existentes
+            document.getElementById('inputMotivoRecarga').value = s.motivo_recarga || '';
+            document.getElementById('inputSaldoSolicitado').value = s.saldo_solicitado || '';
+            document.getElementById('inputJustificativaKm').value = s.justificativa_km || '';
+            document.getElementById('inputMotivoPendenciaRecusa').value = s.motivo_pendencia_recusa || '';
+
+            // Define quem pode editar os campos de ADM (ADM ou Coordenador em Bypass ou Master)
+            const blocoAdm = document.getElementById('blocoCamposAdm');
+            const botoes = document.getElementById('modalBotoesAcao');
+            botoes.innerHTML = '';
+
+            const role = usuarioLogado.role;
+
+            // Lógica de botões para ADM
+            if (role === 'ADM' && (s.status === 'NOVA' || s.status === 'PENDENTE')) {
+                blocoAdm.classList.remove('hidden');
+                botoes.innerHTML = `
+                    <button onclick="executarAcao('RECUSADA')" class="bg-red-600 hover:bg-red-700 text-white px-4 py-2.5 rounded-lg text-xs font-extrabold">❌ Recusar Solicitação</button>
+                    <button onclick="executarAcao('PENDENTE')" class="bg-amber-500 hover:bg-amber-600 text-white px-4 py-2.5 rounded-lg text-xs font-extrabold">⚠️ Marcar Pendente</button>
+                    <button onclick="executarAcao('AGUARDANDO_GESTAO')" class="bg-blue-800 hover:bg-blue-900 text-white px-5 py-2.5 rounded-lg text-xs font-extrabold shadow-lg">✅ Aprovar e Enviar p/ Coordenação &rarr;</button>
+                `;
             }
-        }
+            // Lógica para GESTÃO DE CAMPO (Coordenador: aprova AGUARDANDO_GESTAO ou faz Bypass em NOVA/PENDENTE)
+            else if (role === 'GESTAO_CAMPO') {
+                blocoAdm.classList.remove('hidden');
+                botoes.innerHTML = `
+                    <button onclick="executarAcao('RECUSADA')" class="bg-red-600 hover:bg-red-700 text-white px-4 py-2.5 rounded-lg text-xs font-extrabold">❌ Recusar</button>
+                    <button onclick="executarAcao('PENDENTE')" class="bg-amber-500 hover:bg-amber-600 text-white px-4 py-2.5 rounded-lg text-xs font-extrabold">⚠️ Devolver p/ Pendente</button>
+                    <button onclick="executarAcao('AGUARDANDO_RECARGA')" class="bg-orange-600 hover:bg-orange-700 text-white px-5 py-2.5 rounded-lg text-xs font-extrabold shadow-lg">
+                        ✅ ${s.status === 'NOVA' ? 'Validar (Bypass ADM) e Enviar p/ Recarga' : 'Aprovação Final Coordenação'} &rarr;
+                    </button>
+                `;
+            }
+            // Lógica para GESTÃO DE RECARGA (MASTER)
+            else if (role === 'MASTER') {
+                blocoAdm.classList.remove('hidden');
+                botoes.innerHTML = `
+                    <button onclick="executarAcao('RECUSADA')" class="bg-red-600 hover:bg-red-700 text-white px-4 py-2.5 rounded-lg text-xs font-extrabold">❌ Cancelar / Recusar</button>
+                    <button onclick="executarAcao('PENDENTE')" class="bg-amber-500 hover:bg-amber-600 text-white px-4 py-2.5 rounded-lg text-xs font-extrabold">⚠️ Sinalizar Pendência ao ADM</button>
+                    <button onclick="executarAcao('RECARGA_REALIZADA')" class="bg-emerald-600 hover:bg-emerald-700 text-white px-6 py-2.5 rounded-lg text-xs font-extrabold shadow-lg">💳 Confirmar Recarga Realizada (Vale Card)</button>
+                `;
+            } else {
+                blocoAdm.classList.add('hidden');
+                botoes.innerHTML = `<span class="text-xs text-slate-400 font-bold">Solicitação em etapa atribuída a outro perfil (${s.status}).</span>`;
+            }
+        };
 
-        async function processarSolicitacao(acao) {
-            const form = document.getElementById('formTratativa');
-            if (!form.reportValidity()) return; // Valida campos obrigatórios
+        window.fecharModal = function() {
+            document.getElementById('modalAnalise').classList.add('hidden');
+            solicitacaoAberta = null;
+        };
 
-            let payload = { atualizado_em: new Date().toISOString() };
-            
-            // Extração de Dados ADM
-            if (acao === 'aprovar_adm' || acao === 'bypass_coordenador') {
-                payload.motivo_recarga = document.getElementById('motivo_recarga').value;
-                payload.saldo_solicitado = document.getElementById('saldo_solicitado').value;
-                payload.adm_aprovador_id = usuarioAtual.id;
-                if (solicitacaoEmAnalise.alerta_km) {
-                    payload.justificativa_km_adm = document.getElementById('justificativa_km_adm').value;
+        window.executarAcao = async function(novoStatus) {
+            if (!solicitacaoAberta) return;
+
+            const motivoRecarga = document.getElementById('inputMotivoRecarga').value.trim();
+            const saldo = parseFloat(document.getElementById('inputSaldoSolicitado').value);
+            const justifKm = document.getElementById('inputJustificativaKm').value.trim();
+            const motivoPendRec = document.getElementById('inputMotivoPendenciaRecusa').value.trim();
+
+            // Validações obrigatórias se estiver aprovando
+            if (novoStatus === 'AGUARDANDO_GESTAO' || novoStatus === 'AGUARDANDO_RECARGA' || novoStatus === 'RECARGA_REALIZADA') {
+                if (!motivoRecarga || isNaN(saldo) || saldo <= 0) {
+                    alert('⚠️ Preencha obrigatoriamente o Motivo da Recarga e o Saldo Solicitado (R$)!');
+                    return;
+                }
+                if (solicitacaoAberta.delta_km < 260 && !justifKm) {
+                    alert('🚨 BLOQUEADO: O veículo rodou menos de 260 KM! Preencha obrigatoriamente a Justificativa de Exceção de KM.');
+                    return;
                 }
             }
 
-            // Definição de Status
-            if (acao === 'aprovar_adm') {
-                payload.status = 'AGUARDANDO_GESTAO';
-            } 
-            else if (acao === 'bypass_coordenador') {
-                payload.status = 'AGUARDANDO_RECARGA';
-                payload.gestor_aprovador_id = usuarioAtual.id; // Marca que o coordenador já aprovou
-            }
-            else if (acao === 'aprovar_gestao') {
-                payload.status = 'AGUARDANDO_RECARGA';
-                payload.gestor_aprovador_id = usuarioAtual.id;
-            }
-            else if (acao === 'finalizar_recarga') {
-                payload.status = 'RECARGA_REALIZADA';
-            }
-            else if (acao === 'efetivar_pendencia') {
-                payload.status = 'PENDENTE';
-                payload.motivo_pendencia_recusa = document.getElementById('motivo_pendencia_recusa').value;
-            }
-            else if (acao === 'efetivar_recusa') {
-                payload.status = 'RECUSADA';
-                payload.motivo_pendencia_recusa = document.getElementById('motivo_pendencia_recusa').value;
-            }
-            else if (acao === 'cancelar') {
-                payload.status = 'CANCELADA';
-                payload.motivo_pendencia_recusa = document.getElementById('motivo_pendencia_recusa').value || 'Cancelado pelo Master';
+            // Validação obrigatória se for Pendente ou Recusada
+            if ((novoStatus === 'PENDENTE' || novoStatus === 'RECUSADA') && !motivoPendRec) {
+                alert('⚠️ Informe o motivo da Pendência ou Recusa para que o ADM e o Campo sejam notificados no painel!');
+                return;
             }
 
-            try {
-                // Atualiza o banco
-                const { error } = await supabaseClient
-                    .from('solicitacoes_recarga')
-                    .update(payload)
-                    .eq('id', solicitacaoEmAnalise.id);
+            const atualizacao = {
+                status: novoStatus,
+                motivo_recarga: motivoRecarga || solicitacaoAberta.motivo_recarga,
+                saldo_solicitado: !isNaN(saldo) ? saldo : solicitacaoAberta.saldo_solicitado,
+                justificativa_km: justifKm || solicitacaoAberta.justificativa_km,
+                motivo_pendencia_recusa: motivoPendRec
+            };
 
-                if (error) throw error;
+            if (novoStatus === 'AGUARDANDO_GESTAO') {
+                atualizacao.adm_aprovador_id = usuarioLogado.id;
+                atualizacao.adm_aprovador_nome = usuarioLogado.nome;
+                atualizacao.adm_data_aprovacao = new Date().toISOString();
+            }
+            if (novoStatus === 'AGUARDANDO_RECARGA') {
+                // Se foi Bypass de ADM pelo Coordenador, registra também como validador ADM
+                if (!solicitacaoAberta.adm_aprovador_id) {
+                    atualizacao.adm_aprovador_id = usuarioLogado.id;
+                    atualizacao.adm_aprovador_nome = `${usuarioLogado.nome} (Bypass Coord.)`;
+                    atualizacao.adm_data_aprovacao = new Date().toISOString();
+                }
+                atualizacao.gestor_aprovador_id = usuarioLogado.id;
+                atualizacao.gestor_aprovador_nome = usuarioLogado.nome;
+                atualizacao.gestor_data_aprovacao = new Date().toISOString();
+            }
+            if (novoStatus === 'RECARGA_REALIZADA') {
+                atualizacao.recarga_aprovador_id = usuarioLogado.id;
+                atualizacao.recarga_aprovador_nome = usuarioLogado.nome;
+                atualizacao.recarga_data_baixa = new Date().toISOString();
+            }
 
+            const { error } = await supabaseClient
+                .from('solicitacoes_recarga')
+                .update(atualizacao)
+                .eq('id', solicitacaoAberta.id);
+
+            if (error) {
+                alert('Erro ao salvar tratativa: ' + error.message);
+            } else {
                 fecharModal();
-                carregarSolicitacoes(); // Recarrega a tabela
-            } catch (error) {
-                alert('Erro ao processar a solicitação: ' + error.message);
+                await carregarSolicitacoes();
             }
-        }
+        };
 
-        // Inicia a página
-        checarAcesso();
+        iniciar();
     </script>
 </body>
 </html>
