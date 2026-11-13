@@ -74,7 +74,7 @@
                             <th class="p-3">Nome</th>
                             <th class="p-3">Perfil</th>
                             <th class="p-3">Projeto</th>
-                            <th class="p-3">Status</th>
+                            <th class="p-3 text-center">Ações</th>
                         </tr>
                     </thead>
                     <tbody id="tabelaPerfis" class="text-sm">
@@ -119,20 +119,17 @@
 
         async function carregarPerfisCadastrados() {
             const tbody = document.getElementById('tabelaPerfis');
-            let query = supabaseClient.from('perfis_usuarios').select(`matricula, nome, perfil, ativo, projetos (nome)`).order('nome');
+            // Nota: Adicionamos o 'id' no select para poder passá-lo à função de exclusão
+            let query = supabaseClient.from('perfis_usuarios').select(`id, matricula, nome, perfil, ativo, projetos (nome)`).order('nome');
             if (usuarioAtual.role === 'GESTAO_CAMPO') query = query.eq('projeto_id', usuarioAtual.projeto_id);
 
             const { data, error } = await query;
             
-            // Tratamento de erro melhorado para evitar falhas invisíveis
             if (error) {
-                tbody.innerHTML = `<tr><td colspan="5" class="p-4 text-center text-red-600 font-bold">Erro de Banco de Dados: ${error.message}</td></tr>`; 
-                return;
+                tbody.innerHTML = `<tr><td colspan="5" class="p-4 text-center text-red-600 font-bold">Erro: ${error.message}</td></tr>`; return;
             }
-            
             if (!data || data.length === 0) {
-                tbody.innerHTML = '<tr><td colspan="5" class="p-4 text-center text-slate-500">Nenhum perfil encontrado.</td></tr>'; 
-                return;
+                tbody.innerHTML = '<tr><td colspan="5" class="p-4 text-center text-slate-500">Nenhum perfil encontrado.</td></tr>'; return;
             }
 
             tbody.innerHTML = data.map(p => `
@@ -141,10 +138,33 @@
                     <td class="p-3">${p.nome || '-'}</td>
                     <td class="p-3"><span class="bg-blue-100 text-blue-800 px-2 py-0.5 rounded text-xs uppercase font-medium">${p.perfil}</span></td>
                     <td class="p-3 text-slate-600">${p.projetos ? p.projetos.nome : 'Sem Projeto'}</td>
-                    <td class="p-3"><span class="px-2 py-0.5 rounded text-xs font-medium bg-green-100 text-green-700">Ativo</span></td>
+                    <td class="p-3 text-center">
+                        ${(usuarioAtual.role === 'MASTER' && p.id !== usuarioAtual.id) 
+                            ? `<button onclick="excluirPerfil('${p.id}', '${p.nome}')" class="text-red-600 hover:bg-red-100 px-2 py-1 rounded text-xs font-semibold border border-red-200 transition">Excluir</button>`
+                            : `<span class="text-slate-400 text-xs">-</span>`}
+                    </td>
                 </tr>
             `).join('');
         }
+
+        // Nova Função de Exclusão de Perfil
+        window.excluirPerfil = async function(idUser, nomeUser) {
+            const confirmacao = confirm(`ATENÇÃO: Tem a certeza que deseja excluir permanentemente o utilizador ${nomeUser}?`);
+            if (!confirmacao) return;
+
+            try {
+                // Chama a nossa nova função SQL passando o ID do usuário
+                const { data, error } = await supabaseClient.rpc('excluir_usuario_admin', { p_user_id: idUser });
+                
+                if (error) throw error;
+                if (data && data.sucesso === false) throw new Error(data.erro);
+
+                alert('Utilizador excluído com sucesso!');
+                carregarPerfisCadastrados(); // Recarrega a tabela
+            } catch (error) {
+                alert('Erro ao excluir utilizador: ' + error.message);
+            }
+        };
 
         document.getElementById('formPerfil').addEventListener('submit', async (e) => {
             e.preventDefault();
@@ -162,9 +182,7 @@
             };
 
             try {
-                // Chama a Função Suprema criada no SQL
                 const { data, error } = await supabaseClient.rpc('criar_usuario_admin', payload);
-                
                 if (error) throw error;
                 if (data && data.sucesso === false) throw new Error(data.erro);
 
