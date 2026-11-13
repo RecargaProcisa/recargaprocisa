@@ -355,7 +355,7 @@
             }
         });
 
-        // 7. CONSULTA DE STATUS PELA MATRÍCULA (ABA 2)
+        // 7. CONSULTA DE STATUS PELA MATRÍCULA E EXIBIÇÃO DO SALDO LIBERADO/OBS MASTER (ABA 2)
         async function buscarMinhasSolicitacoes() {
             const mat = document.getElementById('matriculaBusca').value.trim();
             const container = document.getElementById('listaStatusCampo');
@@ -380,10 +380,14 @@
 
                 if (s.status === 'RECARGA_REALIZADA') {
                     badge = '<span class="bg-emerald-600 text-white px-3 py-1 rounded-full text-[10px] sm:text-xs font-extrabold shadow-sm">✅ RECARGA REALIZADA</span>';
-                    avisoExtra = `<div class="mt-2 p-2.5 bg-emerald-50 border border-emerald-200 rounded-lg text-xs text-emerald-900 font-bold">Saldo Liberado: R$ ${s.saldo_solicitado || '0,00'}</div>`;
+                    avisoExtra = `<div class="mt-2 p-2.5 bg-emerald-50 border border-emerald-200 rounded-lg text-xs text-emerald-900 font-bold">Saldo Liberado: R$ ${s.saldo_liberado || s.saldo_solicitado || '0,00'}`;
+                    if (s.observacao_master) avisoExtra += `<br><span class="text-[10px] text-emerald-700 mt-1 block">Obs: ${s.observacao_master}</span>`;
+                    avisoExtra += `</div>`;
                 } else if (s.status === 'PENDENTE') {
                     badge = '<span class="bg-amber-500 text-white px-3 py-1 rounded-full text-[10px] sm:text-xs font-extrabold shadow-sm">⚠️ PENDENTE DE AJUSTE</span>';
-                    avisoExtra = `<div class="mt-2 p-2.5 bg-amber-50 border border-amber-300 rounded-lg text-xs text-amber-900 font-bold">Motivo da Pendência: ${s.motivo_pendencia_recusa || 'Verifique com o ADM do seu projeto.'}</div>`;
+                    avisoExtra = `<div class="mt-2 p-2.5 bg-amber-50 border border-amber-300 rounded-lg text-xs text-amber-900 font-bold">Motivo da Pendência: ${s.motivo_pendencia_recusa || 'Verifique com o ADM do seu projeto.'}`;
+                    if (s.observacao_master) avisoExtra += `<br><span class="text-[10px] text-amber-700 mt-1 block">Obs da Gestão: ${s.observacao_master}</span>`;
+                    avisoExtra += `</div>`;
                 } else if (s.status === 'RECUSADA') {
                     badge = '<span class="bg-red-600 text-white px-3 py-1 rounded-full text-[10px] sm:text-xs font-extrabold shadow-sm">❌ RECUSADA / CANCELADA</span>';
                     avisoExtra = `<div class="mt-2 p-2.5 bg-red-50 border border-red-300 rounded-lg text-xs text-red-900 font-bold">Motivo da Recusa: ${s.motivo_pendencia_recusa || 'Não informado'}</div>`;
