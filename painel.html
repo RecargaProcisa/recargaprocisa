@@ -42,70 +42,74 @@
                 return;
             }
 
-            // 2. Busca o cargo (role) do usuário na tabela perfis
+            // 2. Busca o cargo (role) do usuário na tabela perfis_usuarios
             const { data: perfil, error } = await supabaseClient
-                .from('perfis')
-                .select('role, projeto_id')
+                .from('perfis_usuarios')
+                .select('perfil, projeto_id')
                 .eq('id', user.id)
                 .single();
 
             if (error || !perfil) {
                 document.getElementById('conteudoDinamico').innerHTML = `
                     <div class="bg-red-100 p-4 rounded text-red-800 text-center">
-                        Seu usuário está sem perfil vinculado. Fale com o Master.
+                        Seu utilizador está sem perfil vinculado. Fale com o Master.
                     </div>`;
                 return;
             }
 
             // 3. Atualiza a tag no cabeçalho
-            document.getElementById('tagPerfil').innerText = perfil.role.toUpperCase();
+            document.getElementById('tagPerfil').innerText = perfil.perfil.toUpperCase();
 
-            // 4. Desenha a tela baseada no perfil
+            // 4. Desenha a tela baseada no perfil com LINKS REAIS (tags <a>)
             const main = document.getElementById('conteudoDinamico');
 
-            if (perfil.role === 'master') {
+            if (perfil.perfil === 'MASTER') {
                 main.innerHTML = `
-                    <h1 class="text-2xl font-bold mb-4">Painel Master (God Mode)</h1>
+                    <h1 class="text-2xl font-bold mb-4">Painel Master (Gestão de Recarga)</h1>
                     <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-                        <div class="bg-white p-6 rounded shadow border-l-4 border-blue-600">
-                            <h2 class="font-bold mb-2">Todas as Solicitações</h2>
+                        <a href="todas_solicitacoes.html" class="bg-white p-6 rounded shadow border-l-4 border-blue-600 block hover:bg-slate-50 transition cursor-pointer">
+                            <h2 class="font-bold mb-2 text-blue-800">Todas as Solicitações &rarr;</h2>
                             <p class="text-sm text-slate-600">Acesso global a todos os projetos.</p>
-                        </div>
-                        <div class="bg-white p-6 rounded shadow border-l-4 border-purple-600">
-                            <h2 class="font-bold mb-2">Gestão de Perfis</h2>
+                        </a>
+                        <a href="gestao_perfis.html" class="bg-white p-6 rounded shadow border-l-4 border-purple-600 block hover:bg-slate-50 transition cursor-pointer">
+                            <h2 class="font-bold mb-2 text-purple-800">Gestão de Perfis &rarr;</h2>
                             <p class="text-sm text-slate-600">Criar coordenadores, editar, excluir.</p>
-                        </div>
+                        </a>
                         <div class="bg-white p-6 rounded shadow border-l-4 border-emerald-600">
-                            <h2 class="font-bold mb-2">Cadastros Base</h2>
+                            <h2 class="font-bold mb-2 text-emerald-800">Cadastros Base</h2>
                             <p class="text-sm text-slate-600">Upload de planilha de campo.</p>
                         </div>
                     </div>
                 `;
             } 
-            else if (perfil.role === 'coordenador') {
+            else if (perfil.perfil === 'GESTAO_CAMPO') {
                 main.innerHTML = `
-                    <h1 class="text-2xl font-bold mb-4">Painel do Coordenador</h1>
+                    <h1 class="text-2xl font-bold mb-4">Painel Gestão de Campo (Coordenador)</h1>
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <div class="bg-white p-6 rounded shadow border-l-4 border-orange-500">
-                            <h2 class="font-bold mb-2">Aprovação Final</h2>
+                        <a href="todas_solicitacoes.html" class="bg-white p-6 rounded shadow border-l-4 border-orange-500 block hover:bg-slate-50 transition cursor-pointer">
+                            <h2 class="font-bold mb-2 text-orange-700">Aprovação Final &rarr;</h2>
                             <p class="text-sm text-slate-600">Solicitações validadas pelo ADM.</p>
-                        </div>
-                        <div class="bg-white p-6 rounded shadow border-l-4 border-slate-600">
-                            <h2 class="font-bold mb-2">Meus ADMs</h2>
-                            <p class="text-sm text-slate-600">Gerenciar equipe administrativa.</p>
-                        </div>
+                        </a>
+                        <a href="gestao_perfis.html" class="bg-white p-6 rounded shadow border-l-4 border-slate-600 block hover:bg-slate-50 transition cursor-pointer">
+                            <h2 class="font-bold mb-2 text-slate-700">Meus ADMs &rarr;</h2>
+                            <p class="text-sm text-slate-600">Gerenciar equipa administrativa.</p>
+                        </a>
                     </div>
                 `;
             }
-            else if (perfil.role === 'adm') {
+            else if (perfil.perfil === 'ADM') {
                 main.innerHTML = `
                     <h1 class="text-2xl font-bold mb-4">Painel ADM</h1>
                     <div class="bg-white p-6 rounded shadow border-l-4 border-blue-400 max-w-2xl">
-                        <h2 class="font-bold mb-2">Validação Primária</h2>
+                        <h2 class="font-bold mb-2 text-blue-700">Validação Primária</h2>
                         <p class="text-sm text-slate-600 mb-4">Analise as solicitações do campo para o seu projeto.</p>
-                        <button class="bg-blue-100 text-blue-800 px-4 py-2 rounded text-sm font-semibold">Carregar Solicitações Pendentes</button>
+                        <a href="todas_solicitacoes.html" class="inline-block bg-blue-100 text-blue-800 px-4 py-2 rounded text-sm font-semibold hover:bg-blue-200 transition">Acessar Fila de Aprovação &rarr;</a>
                     </div>
                 `;
+            }
+            else if (perfil.perfil === 'CAMPO') {
+                // Redireciona o utilizador de campo diretamente para o formulário
+                window.location.href = 'index.html';
             }
         }
 
