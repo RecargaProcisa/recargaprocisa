@@ -10,21 +10,29 @@
 </head>
 <body class="bg-slate-100 min-h-screen text-slate-800 pb-12">
 
-    <!-- Faixa Azul Padronizada -->
+    <!-- Faixa Azul Padronizada com Assinatura dos Desenvolvedores -->
     <header class="bg-blue-900 text-white px-4 py-4 shadow-lg border-b-4 border-blue-700">
-        <div class="max-w-5xl mx-auto flex flex-col md:flex-row justify-between items-center gap-3">
-            <div class="font-black text-lg tracking-wider text-blue-100">PROCISA</div>
-            <div class="text-center">
+        <div class="max-w-5xl mx-auto flex flex-col md:flex-row justify-between items-center gap-4">
+            <div class="font-black text-lg tracking-wider text-blue-100 shrink-0">PROCISA</div>
+            <div class="text-center shrink-0">
                 <h1 class="text-xl md:text-2xl font-extrabold tracking-widest uppercase text-white">GESTÃO DE RECARGAS</h1>
                 <p class="text-xs text-blue-200 font-medium tracking-wide mt-0.5">Gestor Luis Manuel Luviano Saldana</p>
             </div>
-            <div class="flex gap-2">
-                <a href="painel.html" id="btnVoltarPainel" class="hidden text-xs bg-amber-500 hover:bg-amber-600 text-slate-900 font-extrabold px-3 py-2 rounded transition shadow">
-                    &larr; Voltar ao Painel
-                </a>
-                <a href="login.html" id="btnLoginRestrito" class="text-xs bg-blue-800 hover:bg-blue-700 px-3 py-2 rounded border border-blue-600 transition font-semibold shadow">
-                    🔒 Acesso ADM / Gestão
-                </a>
+            <div class="flex flex-col items-center md:items-end gap-2 shrink-0">
+                <div class="flex gap-2">
+                    <a href="painel.html" id="btnVoltarPainel" class="hidden text-xs bg-amber-500 hover:bg-amber-600 text-slate-900 font-extrabold px-3 py-2 rounded transition shadow">
+                        &larr; Voltar ao Painel
+                    </a>
+                    <a href="login.html" id="btnLoginRestrito" class="text-xs bg-blue-800 hover:bg-blue-700 px-3 py-2 rounded border border-blue-600 transition font-semibold shadow">
+                        🔒 Acesso ADM / Gestão
+                    </a>
+                </div>
+                <!-- Assinatura dos Desenvolvedores -->
+                <div class="text-[9px] text-blue-300 md:text-right text-center uppercase font-bold leading-tight mt-1">
+                    <span class="text-blue-400">Desenvolvido por:</span><br>
+                    Leonardo Simoes De Almeida<br>
+                    Keith Christien De Jesus Antunes
+                </div>
             </div>
         </div>
     </header>
@@ -103,7 +111,7 @@
                     ⚠️ Atenção: A diferença entre abastecimentos é menor que 260 KM. Sua solicitação ficará sujeita a justificativa e aprovação especial do ADM e da Coordenação.
                 </div>
 
-                <!-- Upload das 4 Fotos (Galeria ou Câmera) -->
+                <!-- Upload das 4 Fotos -->
                 <div class="pt-2">
                     <h3 class="text-xs font-extrabold uppercase text-slate-500 mb-3">Fotos Obrigatórias (Galeria ou Câmera)</h3>
                     <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -155,7 +163,7 @@
         let origemLancamento = 'CAMPO';
         let timerBuscaMatricula = null;
 
-        // 1. AUTO-PREENCHIMENTO EM TEMPO REAL VIA RPC + FALLBACK TABELA
+        // 1. AUTO-PREENCHIMENTO
         const inputMatricula = document.getElementById('matricula');
         const campoNome = document.getElementById('nome_solicitante');
         const statusBusca = document.getElementById('statusBuscaNome');
@@ -169,19 +177,13 @@
             statusBusca.classList.remove('hidden');
 
             try {
-                // Tentativa 1: Chama a função RPC segura (ignora RLS e espaços)
                 let nomeEncontrado = null;
                 const { data: nomeRpc, error: errRpc } = await supabaseClient.rpc('buscar_colaborador_por_matricula', { p_matricula: mat });
 
                 if (!errRpc && nomeRpc) {
                     nomeEncontrado = nomeRpc;
                 } else {
-                    // Tentativa 2 (Fallback): Busca direta na tabela base_colaboradores
-                    const { data: rows } = await supabaseClient
-                        .from('base_colaboradores')
-                        .select('nome')
-                        .ilike('matricula', `%${mat}%`)
-                        .limit(1);
+                    const { data: rows } = await supabaseClient.from('base_colaboradores').select('nome').ilike('matricula', `%${mat}%`).limit(1);
                     if (rows && rows.length > 0) nomeEncontrado = rows[0].nome;
                 }
 
@@ -201,7 +203,6 @@
             }
         }
 
-        // Dispara automaticamente enquanto o usuário digita (com pequeno atraso de 300ms) e também ao sair do campo
         inputMatricula.addEventListener('input', () => {
             clearTimeout(timerBuscaMatricula);
             timerBuscaMatricula = setTimeout(buscarNomeColaborador, 300);
@@ -226,7 +227,7 @@
             }
         }
 
-        // 3. CÁLCULO DE KM EM TEMPO REAL
+        // 3. CÁLCULO DE KM
         function calcularDelta() {
             const u = parseFloat(document.getElementById('km_ultimo').value) || 0;
             const a = parseFloat(document.getElementById('km_atual').value) || 0;
@@ -355,7 +356,7 @@
             }
         });
 
-        // 7. CONSULTA DE STATUS PELA MATRÍCULA E EXIBIÇÃO DO SALDO LIBERADO/OBS MASTER (ABA 2)
+        // 7. CONSULTA DE STATUS COM EXIBIÇÃO CLARA DE SALDO LIBERADO VS SOLICITADO
         async function buscarMinhasSolicitacoes() {
             const mat = document.getElementById('matriculaBusca').value.trim();
             const container = document.getElementById('listaStatusCampo');
@@ -380,17 +381,25 @@
 
                 if (s.status === 'RECARGA_REALIZADA') {
                     badge = '<span class="bg-emerald-600 text-white px-3 py-1 rounded-full text-[10px] sm:text-xs font-extrabold shadow-sm">✅ RECARGA REALIZADA</span>';
-                    avisoExtra = `<div class="mt-2 p-2.5 bg-emerald-50 border border-emerald-200 rounded-lg text-xs text-emerald-900 font-bold">Saldo Liberado: R$ ${s.saldo_liberado || s.saldo_solicitado || '0,00'}`;
-                    if (s.observacao_master) avisoExtra += `<br><span class="text-[10px] text-emerald-700 mt-1 block">Obs: ${s.observacao_master}</span>`;
-                    avisoExtra += `</div>`;
+                    
+                    const valorSol = s.saldo_solicitado ? `R$ ${s.saldo_solicitado}` : '';
+                    const valorLib = (s.saldo_liberado !== null && s.saldo_liberado !== undefined) ? `R$ ${s.saldo_liberado}` : valorSol;
+                    
+                    avisoExtra = `
+                        <div class="mt-2 p-3 bg-emerald-50 border border-emerald-200 rounded-lg shadow-sm">
+                            <p class="text-sm text-emerald-900 mb-0.5">💰 Valor Creditado: <span class="font-black text-emerald-700">${valorLib || '0,00'}</span></p>
+                            ${(s.saldo_liberado !== null && s.saldo_liberado !== s.saldo_solicitado) ? `<p class="text-[10px] font-bold text-slate-500 line-through decoration-red-400">Valor Solicitado (ADM): ${valorSol}</p>` : ''}
+                            ${s.observacao_master ? `<p class="mt-2 pt-2 border-t border-emerald-200 text-[10.5px] text-emerald-800 uppercase tracking-wide leading-tight"><b>Nota da Gestão:</b> ${s.observacao_master}</p>` : ''}
+                        </div>
+                    `;
                 } else if (s.status === 'PENDENTE') {
                     badge = '<span class="bg-amber-500 text-white px-3 py-1 rounded-full text-[10px] sm:text-xs font-extrabold shadow-sm">⚠️ PENDENTE DE AJUSTE</span>';
-                    avisoExtra = `<div class="mt-2 p-2.5 bg-amber-50 border border-amber-300 rounded-lg text-xs text-amber-900 font-bold">Motivo da Pendência: ${s.motivo_pendencia_recusa || 'Verifique com o ADM do seu projeto.'}`;
+                    avisoExtra = `<div class="mt-2 p-3 bg-amber-50 border border-amber-300 rounded-lg text-xs text-amber-900 font-bold">Motivo da Pendência: ${s.motivo_pendencia_recusa || 'Verifique com o ADM do seu projeto.'}`;
                     if (s.observacao_master) avisoExtra += `<br><span class="text-[10px] text-amber-700 mt-1 block">Obs da Gestão: ${s.observacao_master}</span>`;
                     avisoExtra += `</div>`;
                 } else if (s.status === 'RECUSADA') {
                     badge = '<span class="bg-red-600 text-white px-3 py-1 rounded-full text-[10px] sm:text-xs font-extrabold shadow-sm">❌ RECUSADA / CANCELADA</span>';
-                    avisoExtra = `<div class="mt-2 p-2.5 bg-red-50 border border-red-300 rounded-lg text-xs text-red-900 font-bold">Motivo da Recusa: ${s.motivo_pendencia_recusa || 'Não informado'}</div>`;
+                    avisoExtra = `<div class="mt-2 p-3 bg-red-50 border border-red-300 rounded-lg text-xs text-red-900 font-bold">Motivo da Recusa: ${s.motivo_pendencia_recusa || 'Não informado'}</div>`;
                 } else {
                     badge = `<span class="bg-blue-100 text-blue-900 px-3 py-1 rounded-full text-[10px] sm:text-xs font-extrabold shadow-sm border border-blue-200">⏳ EM ANÁLISE (${s.status})</span>`;
                 }
