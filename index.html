@@ -111,7 +111,7 @@
                     ⚠️ Atenção: A diferença entre abastecimentos é menor que 260 KM. Sua solicitação ficará sujeita a justificativa e aprovação especial do ADM e da Coordenação.
                 </div>
 
-                <!-- Upload das 4 Fotos -->
+                <!-- Upload das 4 Fotos (Galeria ou Câmera) -->
                 <div class="pt-2">
                     <h3 class="text-xs font-extrabold uppercase text-slate-500 mb-3">Fotos Obrigatórias (Galeria ou Câmera)</h3>
                     <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -163,14 +163,22 @@
         let origemLancamento = 'CAMPO';
         let timerBuscaMatricula = null;
 
-        // 1. AUTO-PREENCHIMENTO
+        // 1. AUTO-PREENCHIMENTO EM TEMPO REAL VIA RPC + FALLBACK TABELA
         const inputMatricula = document.getElementById('matricula');
         const campoNome = document.getElementById('nome_solicitante');
         const statusBusca = document.getElementById('statusBuscaNome');
 
         async function buscarNomeColaborador() {
             const mat = inputMatricula.value.trim();
-            if (mat.length < 3) return;
+            
+            // CORREÇÃO: Limpa o nome se apagar a matrícula ou for muito curta
+            if (mat.length < 3) {
+                campoNome.value = "";
+                campoNome.placeholder = "Preenchimento automático...";
+                statusBusca.classList.add('hidden');
+                campoNome.classList.remove('bg-emerald-50', 'border-emerald-500', 'text-emerald-900', 'font-bold');
+                return;
+            }
 
             statusBusca.innerText = "🔍 Buscando...";
             statusBusca.className = "text-[10px] font-extrabold text-blue-600";
@@ -193,7 +201,10 @@
                     statusBusca.innerText = "✅ Encontrado!";
                     statusBusca.className = "text-[10px] font-extrabold text-emerald-600";
                 } else {
-                    statusBusca.innerText = "⚠️ Matrícula não cadastrada (digite o nome)";
+                    // CORREÇÃO: Limpa o nome anterior se a nova matrícula não for encontrada
+                    campoNome.value = ""; 
+                    campoNome.placeholder = "Não encontrado. Digite o nome...";
+                    statusBusca.innerText = "⚠️ Matrícula não cadastrada";
                     statusBusca.className = "text-[10px] font-extrabold text-amber-600";
                     campoNome.classList.remove('bg-emerald-50', 'border-emerald-500', 'text-emerald-900', 'font-bold');
                 }
@@ -205,7 +216,7 @@
 
         inputMatricula.addEventListener('input', () => {
             clearTimeout(timerBuscaMatricula);
-            timerBuscaMatricula = setTimeout(buscarNomeColaborador, 300);
+            timerBuscaMatricula = setTimeout(buscarNomeColaborador, 400);
         });
         inputMatricula.addEventListener('blur', buscarNomeColaborador);
 
@@ -356,7 +367,7 @@
             }
         });
 
-        // 7. CONSULTA DE STATUS COM EXIBIÇÃO CLARA DE SALDO LIBERADO VS SOLICITADO
+        // 7. CONSULTA DE STATUS COM EXIBIÇÃO DE SALDO LIBERADO
         async function buscarMinhasSolicitacoes() {
             const mat = document.getElementById('matriculaBusca').value.trim();
             const container = document.getElementById('listaStatusCampo');
