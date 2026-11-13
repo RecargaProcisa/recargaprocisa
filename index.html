@@ -60,14 +60,17 @@
                     </div>
                     <div>
                         <label class="block text-xs font-bold uppercase text-slate-700 mb-1">Matrícula do Condutor *</label>
-                        <input type="text" id="matricula" required placeholder="Ex: 12345"
+                        <input type="text" id="matricula" required placeholder="Digite a matrícula (Ex: 150246)" autocomplete="off"
                             class="w-full px-3 py-3 border border-slate-300 rounded-xl font-bold focus:ring-2 focus:ring-blue-600">
                     </div>
                 </div>
 
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div>
-                        <label class="block text-xs font-bold uppercase text-slate-700 mb-1">Nome do Colaborador *</label>
+                        <div class="flex justify-between items-center mb-1">
+                            <label class="block text-xs font-bold uppercase text-slate-700">Nome do Colaborador *</label>
+                            <span id="statusBuscaNome" class="text-[10px] font-extrabold text-blue-600 hidden">Buscando...</span>
+                        </div>
                         <input type="text" id="nome_solicitante" required placeholder="Preenchimento automático..."
                             class="w-full px-3 py-3 border border-slate-300 rounded-xl uppercase focus:ring-2 focus:ring-blue-600 transition-colors duration-300">
                     </div>
@@ -100,7 +103,7 @@
                     ⚠️ Atenção: A diferença entre abastecimentos é menor que 260 KM. Sua solicitação ficará sujeita a justificativa e aprovação especial do ADM e da Coordenação.
                 </div>
 
-                <!-- Upload das 4 Fotos (Sem 'capture' para abrir opção de Galeria) -->
+                <!-- Upload das 4 Fotos (Galeria ou Câmera) -->
                 <div class="pt-2">
                     <h3 class="text-xs font-extrabold uppercase text-slate-500 mb-3">Fotos Obrigatórias (Galeria ou Câmera)</h3>
                     <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -148,49 +151,62 @@
         </div>
     </div>
 
-    <!-- SCRIPT DE FUNCIONAMENTO -->
     <script>
         let origemLancamento = 'CAMPO';
+        let timerBuscaMatricula = null;
 
-        // 1. AUTO-PREENCHIMENTO DO NOME VIA MATRÍCULA (À Prova de Falhas)
+        // 1. AUTO-PREENCHIMENTO EM TEMPO REAL VIA RPC + FALLBACK TABELA
         const inputMatricula = document.getElementById('matricula');
         const campoNome = document.getElementById('nome_solicitante');
+        const statusBusca = document.getElementById('statusBuscaNome');
 
         async function buscarNomeColaborador() {
             const mat = inputMatricula.value.trim();
-            if (mat.length > 0) {
-                campoNome.placeholder = "A pesquisar...";
-                campoNome.value = ""; // Limpa o campo para nova busca
-                
-                try {
-                    // Usamos .ilike para ignorar diferenças de formatação e removemos o .single()
-                    const { data, error } = await supabaseClient
+            if (mat.length < 3) return;
+
+            statusBusca.innerText = "🔍 Buscando...";
+            statusBusca.className = "text-[10px] font-extrabold text-blue-600";
+            statusBusca.classList.remove('hidden');
+
+            try {
+                // Tentativa 1: Chama a função RPC segura (ignora RLS e espaços)
+                let nomeEncontrado = null;
+                const { data: nomeRpc, error: errRpc } = await supabaseClient.rpc('buscar_colaborador_por_matricula', { p_matricula: mat });
+
+                if (!errRpc && nomeRpc) {
+                    nomeEncontrado = nomeRpc;
+                } else {
+                    // Tentativa 2 (Fallback): Busca direta na tabela base_colaboradores
+                    const { data: rows } = await supabaseClient
                         .from('base_colaboradores')
                         .select('nome')
-                        .ilike('matricula', mat)
+                        .ilike('matricula', `%${mat}%`)
                         .limit(1);
-                    
-                    if (error) throw error;
-                    
-                    if (data && data.length > 0) {
-                        campoNome.value = data[0].nome;
-                        campoNome.classList.add('bg-emerald-50', 'border-emerald-400', 'text-emerald-900', 'font-bold');
-                        setTimeout(() => campoNome.classList.remove('bg-emerald-50', 'border-emerald-400', 'text-emerald-900', 'font-bold'), 3000);
-                    } else {
-                        campoNome.placeholder = "NOME NÃO ENCONTRADO. DIGITE MANUALMENTE.";
-                    }
-                } catch (err) {
-                    console.error("Erro na busca do Supabase:", err);
-                    campoNome.placeholder = "ERRO DE COMUNICAÇÃO. DIGITE MANUALMENTE.";
+                    if (rows && rows.length > 0) nomeEncontrado = rows[0].nome;
                 }
+
+                if (nomeEncontrado) {
+                    campoNome.value = nomeEncontrado;
+                    campoNome.classList.add('bg-emerald-50', 'border-emerald-500', 'text-emerald-900', 'font-bold');
+                    statusBusca.innerText = "✅ Encontrado!";
+                    statusBusca.className = "text-[10px] font-extrabold text-emerald-600";
+                } else {
+                    statusBusca.innerText = "⚠️ Matrícula não cadastrada (digite o nome)";
+                    statusBusca.className = "text-[10px] font-extrabold text-amber-600";
+                    campoNome.classList.remove('bg-emerald-50', 'border-emerald-500', 'text-emerald-900', 'font-bold');
+                }
+            } catch (err) {
+                console.error("Erro na busca:", err);
+                statusBusca.classList.add('hidden');
             }
         }
-        
-        // Aciona a busca tanto ao sair do campo (blur) quanto ao digitar Enter
-        inputMatricula.addEventListener('blur', buscarNomeColaborador);
-        inputMatricula.addEventListener('keyup', (e) => {
-            if (e.key === 'Enter') buscarNomeColaborador();
+
+        // Dispara automaticamente enquanto o usuário digita (com pequeno atraso de 300ms) e também ao sair do campo
+        inputMatricula.addEventListener('input', () => {
+            clearTimeout(timerBuscaMatricula);
+            timerBuscaMatricula = setTimeout(buscarNomeColaborador, 300);
         });
+        inputMatricula.addEventListener('blur', buscarNomeColaborador);
 
         // 2. ALTERNÂNCIA DE ABAS
         function alternarAba(aba) {
@@ -235,7 +251,6 @@
                 const { data: projs, error } = await supabaseClient.from('projetos').select('nome').order('nome');
                 
                 if (error) {
-                    console.error('Erro de permissão ou banco:', error);
                     select.innerHTML = '<option value="">GERAL (Erro ao carregar)</option>';
                 } else if (projs && projs.length > 0) {
                     select.innerHTML = '<option value="">Selecione o Projeto...</option>' + 
@@ -244,7 +259,6 @@
                     select.innerHTML = '<option value="GERAL">GERAL</option>';
                 }
 
-                // Verifica se há Gestor logado fazendo lançamento manual
                 const { data: { user } } = await supabaseClient.auth.getUser();
                 if (user) {
                     document.getElementById('btnVoltarPainel').classList.remove('hidden');
@@ -262,7 +276,7 @@
             }
         }
 
-        // 5. UPLOAD DE FOTOS PARA O SUPABASE STORAGE
+        // 5. UPLOAD DE FOTOS
         async function uploadFoto(inputElement, prefixo) {
             const file = inputElement.files[0];
             if (!file) throw new Error(`Você esqueceu de anexar a foto: ${prefixo}`);
@@ -295,7 +309,6 @@
             msg.classList.add('hidden');
 
             try {
-                // Sobe as 4 imagens
                 const urlPainel = await uploadFoto(document.getElementById('foto_painel'), 'painel');
                 const urlMapa   = await uploadFoto(document.getElementById('foto_mapa'), 'mapa');
                 const urlCartao = await uploadFoto(document.getElementById('foto_cartao'), 'cartao');
@@ -303,7 +316,6 @@
 
                 const matriculaDigitada = document.getElementById('matricula').value.trim();
 
-                // Grava na Tabela de Solicitações
                 const { error } = await supabaseClient.from('solicitacoes_recarga').insert([{
                     projeto: document.getElementById('projeto').value,
                     matricula: matriculaDigitada,
@@ -327,10 +339,10 @@
                 msg.innerHTML = `✅ Solicitação enviada com sucesso! Acompanhe na aba "Consultar Minha Matrícula".`;
                 msg.classList.remove('hidden');
                 
-                // Reseta formulário e estados visuais
                 document.getElementById('formRecarga').reset();
                 document.getElementById('visorDelta').innerText = '0 km';
                 document.getElementById('alertaKmCampo').classList.add('hidden');
+                statusBusca.classList.add('hidden');
                 document.getElementById('matriculaBusca').value = matriculaDigitada;
 
             } catch (err) {
