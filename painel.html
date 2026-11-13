@@ -10,7 +10,7 @@
 </head>
 <body class="bg-slate-100 min-h-screen text-slate-800">
 
-    <!-- Faixa Azul Padronizada -->
+    <!-- Faixa Azul Padronizada com Assinatura dos Desenvolvedores -->
     <header class="bg-blue-900 text-white px-6 py-4 shadow-lg border-b-4 border-blue-700">
         <div class="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-3 items-center gap-4">
             <div class="flex items-center gap-3 justify-center md:justify-start">
@@ -21,20 +21,27 @@
                 <h1 class="text-2xl font-extrabold tracking-widest uppercase text-white">GESTÃO DE RECARGAS</h1>
                 <p class="text-xs text-blue-200 font-medium tracking-wide mt-0.5">Gestor Luis Manuel Luviano Saldana</p>
             </div>
-            <div class="flex gap-2 justify-center md:justify-end">
-                <button onclick="trocarMinhaSenha()" class="text-xs bg-blue-800 hover:bg-blue-700 px-3 py-2 rounded border border-blue-600 transition font-semibold">
-                    🔒 Trocar Senha
-                </button>
-                <button onclick="sair()" class="text-xs bg-red-600 hover:bg-red-700 px-4 py-2 rounded border border-red-500 transition font-bold">
-                    Sair
-                </button>
+            <div class="flex flex-col items-center md:items-end gap-2 shrink-0">
+                <div class="flex gap-2 justify-center md:justify-end">
+                    <button onclick="trocarMinhaSenha()" class="text-xs bg-blue-800 hover:bg-blue-700 px-3 py-2 rounded border border-blue-600 transition font-semibold shadow">
+                        🔒 Trocar Senha
+                    </button>
+                    <button onclick="sair()" class="text-xs bg-red-600 hover:bg-red-700 px-4 py-2 rounded border border-red-500 transition font-bold shadow">
+                        Sair
+                    </button>
+                </div>
+                <!-- Assinatura dos Desenvolvedores -->
+                <div class="text-[9px] text-blue-300 md:text-right text-center uppercase font-bold leading-tight mt-1">
+                    <span class="text-blue-400">Desenvolvido por:</span><br>
+                    Leonardo Simoes De Almeida<br>
+                    Keith Christien De Jesus Antunes
+                </div>
             </div>
         </div>
     </header>
 
-    <!-- Conteúdo Principal -->
     <main id="conteudoDinamico" class="p-6 md:p-10 max-w-7xl mx-auto">
-        <div class="text-center text-slate-500 mt-16 text-lg">Carregando permissões do perfil...</div>
+        <div class="text-center text-slate-500 mt-16 text-lg font-bold">Carregando permissões do perfil...</div>
     </main>
 
     <script>
@@ -65,7 +72,7 @@
 
             if (error || !perfil) {
                 document.getElementById('conteudoDinamico').innerHTML = `
-                    <div class="bg-red-100 p-6 rounded-xl text-red-800 text-center font-bold border border-red-300">
+                    <div class="bg-red-100 p-6 rounded-xl text-red-800 text-center font-bold border border-red-300 shadow">
                         Seu usuário não possui perfil configurado. Contate a Gestão de Recarga (Master).
                     </div>`;
                 return;
@@ -76,96 +83,134 @@
             document.getElementById('tagPerfil').innerText = nomeExibicaoPerfil;
 
             const listaProjetos = (perfil.projetos && perfil.projetos.length > 0) 
-                ? perfil.projetos.map(p => `<span class="bg-blue-100 text-blue-900 px-2.5 py-1 rounded text-xs font-bold">${p}</span>`).join(' ')
-                : `<span class="text-slate-400 text-xs">Todos / Global</span>`;
+                ? perfil.projetos.map(p => `<span class="bg-blue-100 text-blue-900 px-2.5 py-1 rounded text-xs font-bold border border-blue-200">${p}</span>`).join(' ')
+                : `<span class="bg-purple-100 text-purple-900 px-2.5 py-1 rounded text-xs font-bold border border-purple-200">Acesso Global (Todos os Projetos)</span>`;
 
             const main = document.getElementById('conteudoDinamico');
-
             let cardsHtml = '';
 
+            // CARDS PARA O GESTOR MASTER
             if (perfil.perfil === 'MASTER') {
                 cardsHtml = `
-                    <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
-                        <a href="todas_solicitacoes.html" class="bg-white p-8 rounded-2xl shadow-lg border-t-8 border-blue-600 hover:-translate-y-1 hover:shadow-2xl transition flex flex-col justify-between min-h-[250px]">
+                    <div class="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-5 gap-6">
+                        <a href="todas_solicitacoes.html" class="bg-white p-6 rounded-2xl shadow-lg border-t-8 border-blue-600 hover:-translate-y-1 hover:shadow-2xl transition flex flex-col justify-between min-h-[220px]">
                             <div>
-                                <div class="text-4xl mb-4">💳</div>
-                                <h2 class="text-2xl font-extrabold text-slate-800 mb-2">Painel de Recargas</h2>
-                                <p class="text-sm text-slate-600">Visão consolidada global. Liberação de saldo VALE CARD, auditoria de aprovações, KM e fotos.</p>
+                                <div class="text-3xl mb-3">💳</div>
+                                <h2 class="text-xl font-extrabold text-slate-800 mb-2">Fila de Recargas</h2>
+                                <p class="text-xs text-slate-600">Aprovação final Vale Card, rastreio por placa e auditoria de aprovações e fotos.</p>
                             </div>
-                            <span class="mt-6 inline-block text-blue-700 font-bold text-sm">Acessar Fila Global &rarr;</span>
+                            <span class="mt-4 inline-block text-blue-700 font-bold text-xs">Acessar Fila &rarr;</span>
                         </a>
 
-                        <a href="gestao_perfis.html" class="bg-white p-8 rounded-2xl shadow-lg border-t-8 border-purple-600 hover:-translate-y-1 hover:shadow-2xl transition flex flex-col justify-between min-h-[250px]">
+                        <a href="gestao_perfis.html" class="bg-white p-6 rounded-2xl shadow-lg border-t-8 border-purple-600 hover:-translate-y-1 hover:shadow-2xl transition flex flex-col justify-between min-h-[220px]">
                             <div>
-                                <div class="text-4xl mb-4">👥</div>
-                                <h2 class="text-2xl font-extrabold text-slate-800 mb-2">Gestão de Perfis</h2>
-                                <p class="text-sm text-slate-600">Cadastrar usuários em múltiplos projetos, redefinir senhas e gerenciar permissões (ADM, Coordenação e Master).</p>
+                                <div class="text-3xl mb-3">👥</div>
+                                <h2 class="text-xl font-extrabold text-slate-800 mb-2">Gestão de Perfis</h2>
+                                <p class="text-xs text-slate-600">Cadastrar e gerenciar usuários em múltiplos projetos (ADM, Coordenação e Master).</p>
                             </div>
-                            <span class="mt-6 inline-block text-purple-700 font-bold text-sm">Gerenciar Usuários &rarr;</span>
+                            <span class="mt-4 inline-block text-purple-700 font-bold text-xs">Gerenciar Perfis &rarr;</span>
                         </a>
 
-                        <a href="index.html?modo=manual" class="bg-white p-8 rounded-2xl shadow-lg border-t-8 border-emerald-600 hover:-translate-y-1 hover:shadow-2xl transition flex flex-col justify-between min-h-[250px]">
+                        <a href="cadastros_base.html" class="bg-white p-6 rounded-2xl shadow-lg border-t-8 border-amber-500 hover:-translate-y-1 hover:shadow-2xl transition flex flex-col justify-between min-h-[220px]">
                             <div>
-                                <div class="text-4xl mb-4">➕</div>
-                                <h2 class="text-2xl font-extrabold text-slate-800 mb-2">Solicitação Manual</h2>
-                                <p class="text-sm text-slate-600">Lançar uma solicitação de recarga diretamente pela gestão inserindo matrícula do técnico e fotos.</p>
+                                <div class="text-3xl mb-3">🗄️</div>
+                                <h2 class="text-xl font-extrabold text-slate-800 mb-2">Cadastros Base</h2>
+                                <p class="text-xs text-slate-600">Gerenciar Projetos, Base de Matrículas/Nomes e Importação em Massa via Excel.</p>
                             </div>
-                            <span class="mt-6 inline-block text-emerald-700 font-bold text-sm">Abrir Formulário &rarr;</span>
+                            <span class="mt-4 inline-block text-amber-700 font-bold text-xs">Abrir Fontes &rarr;</span>
+                        </a>
+
+                        <a href="dashboard.html" class="bg-white p-6 rounded-2xl shadow-lg border-t-8 border-indigo-600 hover:-translate-y-1 hover:shadow-2xl transition flex flex-col justify-between min-h-[220px]">
+                            <div>
+                                <div class="text-3xl mb-3">📊</div>
+                                <h2 class="text-xl font-extrabold text-slate-800 mb-2">Dashboard</h2>
+                                <p class="text-xs text-slate-600">Consultar métricas por matrícula: quantidade de recargas, valores e KM total.</p>
+                            </div>
+                            <span class="mt-4 inline-block text-indigo-700 font-bold text-xs">Ver Indicadores &rarr;</span>
+                        </a>
+
+                        <a href="index.html?modo=manual" class="bg-white p-6 rounded-2xl shadow-lg border-t-8 border-emerald-600 hover:-translate-y-1 hover:shadow-2xl transition flex flex-col justify-between min-h-[220px]">
+                            <div>
+                                <div class="text-3xl mb-3">➕</div>
+                                <h2 class="text-xl font-extrabold text-slate-800 mb-2">Solicitação Manual</h2>
+                                <p class="text-xs text-slate-600">Lançar recarga diretamente pela gestão inserindo matrícula do técnico e fotos.</p>
+                            </div>
+                            <span class="mt-4 inline-block text-emerald-700 font-bold text-xs">Lançar Agora &rarr;</span>
                         </a>
                     </div>
                 `;
             } 
+            // CARDS PARA COORDENADOR
             else if (perfil.perfil === 'GESTAO_CAMPO') {
                 cardsHtml = `
-                    <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
-                        <a href="todas_solicitacoes.html" class="bg-white p-8 rounded-2xl shadow-lg border-t-8 border-orange-500 hover:-translate-y-1 hover:shadow-2xl transition flex flex-col justify-between min-h-[250px]">
+                    <div class="grid grid-cols-1 md:grid-cols-4 gap-6">
+                        <a href="todas_solicitacoes.html" class="bg-white p-6 rounded-2xl shadow-lg border-t-8 border-orange-500 hover:-translate-y-1 hover:shadow-2xl transition flex flex-col justify-between min-h-[220px]">
                             <div>
-                                <div class="text-4xl mb-4">✅</div>
-                                <h2 class="text-2xl font-extrabold text-slate-800 mb-2">Aprovação & Bypass ADM</h2>
-                                <p class="text-sm text-slate-600">Aprovação final global (AGUARDANDO GESTÃO) e atuação direta nas solicitações NOVAS dos seus projetos.</p>
+                                <div class="text-3xl mb-3">✅</div>
+                                <h2 class="text-xl font-extrabold text-slate-800 mb-2">Analisar Solicitações</h2>
+                                <p class="text-xs text-slate-600">Análise de Meus Projetos, Visão Global (Outros Projetos) e Bypass de ADM.</p>
                             </div>
-                            <span class="mt-6 inline-block text-orange-600 font-bold text-sm">Analisar Solicitações &rarr;</span>
+                            <span class="mt-4 inline-block text-orange-600 font-bold text-xs">Abrir Esteira &rarr;</span>
                         </a>
 
-                        <a href="gestao_perfis.html" class="bg-white p-8 rounded-2xl shadow-lg border-t-8 border-purple-600 hover:-translate-y-1 hover:shadow-2xl transition flex flex-col justify-between min-h-[250px]">
+                        <a href="gestao_perfis.html" class="bg-white p-6 rounded-2xl shadow-lg border-t-8 border-purple-600 hover:-translate-y-1 hover:shadow-2xl transition flex flex-col justify-between min-h-[220px]">
                             <div>
-                                <div class="text-4xl mb-4">👤</div>
-                                <h2 class="text-2xl font-extrabold text-slate-800 mb-2">Minha Equipe ADM</h2>
-                                <p class="text-sm text-slate-600">Visualizar e cadastrar usuários administrativos vinculados aos seus projetos.</p>
+                                <div class="text-3xl mb-3">👤</div>
+                                <h2 class="text-xl font-extrabold text-slate-800 mb-2">Meus ADMs</h2>
+                                <p class="text-xs text-slate-600">Cadastrar, editar e excluir os perfis de validação (ADM) criados por você.</p>
                             </div>
-                            <span class="mt-6 inline-block text-purple-700 font-bold text-sm">Gerenciar ADMs &rarr;</span>
+                            <span class="mt-4 inline-block text-purple-700 font-bold text-xs">Gerenciar ADMs &rarr;</span>
                         </a>
 
-                        <a href="index.html?modo=manual" class="bg-white p-8 rounded-2xl shadow-lg border-t-8 border-emerald-600 hover:-translate-y-1 hover:shadow-2xl transition flex flex-col justify-between min-h-[250px]">
+                        <a href="dashboard.html" class="bg-white p-6 rounded-2xl shadow-lg border-t-8 border-indigo-600 hover:-translate-y-1 hover:shadow-2xl transition flex flex-col justify-between min-h-[220px]">
                             <div>
-                                <div class="text-4xl mb-4">🚗</div>
-                                <h2 class="text-2xl font-extrabold text-slate-800 mb-2">Nova Solicitação Manual</h2>
-                                <p class="text-sm text-slate-600">Registrar recarga manualmente para um técnico de campo com upload das 4 fotos obrigatórias.</p>
+                                <div class="text-3xl mb-3">📊</div>
+                                <h2 class="text-xl font-extrabold text-slate-800 mb-2">Dashboard</h2>
+                                <p class="text-xs text-slate-600">Consultar histórico financeiro e KM rodado pelas matrículas do seu time.</p>
                             </div>
-                            <span class="mt-6 inline-block text-emerald-700 font-bold text-sm">Lançar Recarga &rarr;</span>
+                            <span class="mt-4 inline-block text-indigo-700 font-bold text-xs">Ver Indicadores &rarr;</span>
+                        </a>
+
+                        <a href="index.html?modo=manual" class="bg-white p-6 rounded-2xl shadow-lg border-t-8 border-emerald-600 hover:-translate-y-1 hover:shadow-2xl transition flex flex-col justify-between min-h-[220px]">
+                            <div>
+                                <div class="text-3xl mb-3">🚗</div>
+                                <h2 class="text-xl font-extrabold text-slate-800 mb-2">Solicitação Manual</h2>
+                                <p class="text-xs text-slate-600">Registrar recarga manualmente para um técnico do seu projeto fazendo upload das fotos.</p>
+                            </div>
+                            <span class="mt-4 inline-block text-emerald-700 font-bold text-xs">Lançar Recarga &rarr;</span>
                         </a>
                     </div>
                 `;
             }
+            // CARDS PARA ADM
             else if (perfil.perfil === 'ADM') {
                 cardsHtml = `
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
-                        <a href="todas_solicitacoes.html" class="bg-white p-8 rounded-2xl shadow-lg border-t-8 border-blue-600 hover:-translate-y-1 hover:shadow-2xl transition flex flex-col justify-between min-h-[250px]">
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                        <a href="todas_solicitacoes.html" class="bg-white p-6 rounded-2xl shadow-lg border-t-8 border-blue-600 hover:-translate-y-1 hover:shadow-2xl transition flex flex-col justify-between min-h-[220px]">
                             <div>
-                                <div class="text-4xl mb-4">🔍</div>
-                                <h2 class="text-2xl font-extrabold text-slate-800 mb-2">Fila de Validação ADM</h2>
-                                <p class="text-sm text-slate-600">Conferir fotos, validar parâmetro de 260 KM, preencher Motivo da Recarga e Saldo Solicitado dos seus projetos.</p>
+                                <div class="text-3xl mb-3">🔍</div>
+                                <h2 class="text-xl font-extrabold text-slate-800 mb-2">Fila de Validação ADM</h2>
+                                <p class="text-xs text-slate-600">Validar evidências, parâmetro de 260 KM, imputar motivo e saldo solicitado.</p>
                             </div>
-                            <span class="mt-6 inline-block text-blue-700 font-bold text-sm">Acessar Solicitações &rarr;</span>
+                            <span class="mt-4 inline-block text-blue-700 font-bold text-xs">Acessar Fila &rarr;</span>
                         </a>
 
-                        <a href="index.html?modo=manual" class="bg-white p-8 rounded-2xl shadow-lg border-t-8 border-emerald-600 hover:-translate-y-1 hover:shadow-2xl transition flex flex-col justify-between min-h-[250px]">
+                        <a href="dashboard.html" class="bg-white p-6 rounded-2xl shadow-lg border-t-8 border-indigo-600 hover:-translate-y-1 hover:shadow-2xl transition flex flex-col justify-between min-h-[220px]">
                             <div>
-                                <div class="text-4xl mb-4">📝</div>
-                                <h2 class="text-2xl font-extrabold text-slate-800 mb-2">Nova Solicitação Manual</h2>
-                                <p class="text-sm text-slate-600">Preencher formulário em nome do técnico de campo (caso ele esteja sem acesso) subindo as 4 fotos obrigatórias.</p>
+                                <div class="text-3xl mb-3">📊</div>
+                                <h2 class="text-xl font-extrabold text-slate-800 mb-2">Dashboard</h2>
+                                <p class="text-xs text-slate-600">Acompanhar histórico de solicitações e liberação de valores por matrícula.</p>
                             </div>
-                            <span class="mt-6 inline-block text-emerald-700 font-bold text-sm">Preencher Manualmente &rarr;</span>
+                            <span class="mt-4 inline-block text-indigo-700 font-bold text-xs">Ver Indicadores &rarr;</span>
+                        </a>
+
+                        <a href="index.html?modo=manual" class="bg-white p-6 rounded-2xl shadow-lg border-t-8 border-emerald-600 hover:-translate-y-1 hover:shadow-2xl transition flex flex-col justify-between min-h-[220px]">
+                            <div>
+                                <div class="text-3xl mb-3">📝</div>
+                                <h2 class="text-xl font-extrabold text-slate-800 mb-2">Nova Solicitação Manual</h2>
+                                <p class="text-xs text-slate-600">Preencher formulário em nome do técnico subindo as 4 fotos obrigatórias.</p>
+                            </div>
+                            <span class="mt-4 inline-block text-emerald-700 font-bold text-xs">Preencher Manualmente &rarr;</span>
                         </a>
                     </div>
                 `;
