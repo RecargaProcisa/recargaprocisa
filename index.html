@@ -19,22 +19,23 @@
                 <p class="text-xs text-blue-200 font-medium tracking-wide mt-0.5">Gestor Luis Manuel Luviano Saldana</p>
             </div>
             <div class="flex gap-2">
-                <a href="painel.html" id="btnVoltarPainel" class="hidden text-xs bg-amber-500 hover:bg-amber-600 text-slate-900 font-extrabold px-3 py-2 rounded transition">
+                <a href="painel.html" id="btnVoltarPainel" class="hidden text-xs bg-amber-500 hover:bg-amber-600 text-slate-900 font-extrabold px-3 py-2 rounded transition shadow">
                     &larr; Voltar ao Painel
                 </a>
-                <a href="login.html" id="btnLoginRestrito" class="text-xs bg-blue-800 hover:bg-blue-700 px-3 py-2 rounded border border-blue-600 transition font-semibold">
+                <a href="login.html" id="btnLoginRestrito" class="text-xs bg-blue-800 hover:bg-blue-700 px-3 py-2 rounded border border-blue-600 transition font-semibold shadow">
                     🔒 Acesso ADM / Gestão
                 </a>
             </div>
         </div>
     </header>
 
+    <!-- Abas Mobile-First -->
     <div class="max-w-3xl mx-auto mt-6 px-4">
         <div class="grid grid-cols-2 bg-slate-200 p-1 rounded-xl shadow-inner mb-6">
-            <button onclick="alternarAba('solicitar')" id="tabSolicitar" class="py-2.5 rounded-lg font-extrabold text-sm bg-white text-blue-900 shadow">
+            <button onclick="alternarAba('solicitar')" id="tabSolicitar" class="py-2.5 rounded-lg font-extrabold text-sm bg-white text-blue-900 shadow transition">
                 ⛽ Nova Solicitação
             </button>
-            <button onclick="alternarAba('consultar')" id="tabConsultar" class="py-2.5 rounded-lg font-extrabold text-sm text-slate-600 hover:text-slate-900">
+            <button onclick="alternarAba('consultar')" id="tabConsultar" class="py-2.5 rounded-lg font-extrabold text-sm text-slate-600 hover:text-slate-900 transition">
                 📋 Consultar Minha Matrícula
             </button>
         </div>
@@ -44,7 +45,7 @@
             <div class="flex justify-between items-center border-b pb-3 mb-5">
                 <div>
                     <h2 class="text-lg font-extrabold text-blue-900" id="tituloFormulario">Formulário de Solicitação de Campo</h2>
-                    <p class="text-xs text-slate-500">Todos os campos e as 4 fotos são obrigatórios</p>
+                    <p class="text-xs text-slate-500 mt-0.5">Todos os campos e as 4 fotos são obrigatórios</p>
                 </div>
                 <span id="badgeModoLancamento" class="bg-blue-100 text-blue-800 text-xs font-bold px-2.5 py-1 rounded">MODO CAMPO</span>
             </div>
@@ -67,7 +68,7 @@
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div>
                         <label class="block text-xs font-bold uppercase text-slate-700 mb-1">Nome do Colaborador *</label>
-                        <input type="text" id="nome_solicitante" required placeholder="Seu nome completo"
+                        <input type="text" id="nome_solicitante" required placeholder="Preenchimento automático..."
                             class="w-full px-3 py-3 border border-slate-300 rounded-xl uppercase focus:ring-2 focus:ring-blue-600 transition-colors duration-300">
                     </div>
                     <div>
@@ -99,24 +100,24 @@
                     ⚠️ Atenção: A diferença entre abastecimentos é menor que 260 KM. Sua solicitação ficará sujeita a justificativa e aprovação especial do ADM e da Coordenação.
                 </div>
 
-                <!-- Upload das 4 Fotos (capture removido para abrir Galeria) -->
+                <!-- Upload das 4 Fotos (Sem 'capture' para abrir opção de Galeria) -->
                 <div class="pt-2">
                     <h3 class="text-xs font-extrabold uppercase text-slate-500 mb-3">Fotos Obrigatórias (Galeria ou Câmera)</h3>
                     <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                        <div class="border-2 border-dashed border-slate-300 rounded-xl p-3 bg-slate-50">
-                            <label class="block text-xs font-extrabold text-blue-900 mb-1">1. Foto do Painel (KM) *</label>
+                        <div class="border-2 border-dashed border-slate-300 rounded-xl p-3 bg-slate-50 hover:bg-slate-100 transition">
+                            <label class="block text-xs font-extrabold text-blue-900 mb-1 cursor-pointer">1. Foto do Painel (KM) *</label>
                             <input type="file" id="foto_painel" accept="image/*" required class="w-full text-xs">
                         </div>
-                        <div class="border-2 border-dashed border-slate-300 rounded-xl p-3 bg-slate-50">
-                            <label class="block text-xs font-extrabold text-blue-900 mb-1">2. Foto Mapa de Bordo *</label>
+                        <div class="border-2 border-dashed border-slate-300 rounded-xl p-3 bg-slate-50 hover:bg-slate-100 transition">
+                            <label class="block text-xs font-extrabold text-blue-900 mb-1 cursor-pointer">2. Foto Mapa de Bordo *</label>
                             <input type="file" id="foto_mapa" accept="image/*" required class="w-full text-xs">
                         </div>
-                        <div class="border-2 border-dashed border-slate-300 rounded-xl p-3 bg-slate-50">
-                            <label class="block text-xs font-extrabold text-blue-900 mb-1">3. Foto do Cartão Vale Card *</label>
+                        <div class="border-2 border-dashed border-slate-300 rounded-xl p-3 bg-slate-50 hover:bg-slate-100 transition">
+                            <label class="block text-xs font-extrabold text-blue-900 mb-1 cursor-pointer">3. Foto do Cartão Vale Card *</label>
                             <input type="file" id="foto_cartao" accept="image/*" required class="w-full text-xs">
                         </div>
-                        <div class="border-2 border-dashed border-slate-300 rounded-xl p-3 bg-slate-50">
-                            <label class="block text-xs font-extrabold text-blue-900 mb-1">4. Foto Carro Adesivado *</label>
+                        <div class="border-2 border-dashed border-slate-300 rounded-xl p-3 bg-slate-50 hover:bg-slate-100 transition">
+                            <label class="block text-xs font-extrabold text-blue-900 mb-1 cursor-pointer">4. Foto Carro Adesivado *</label>
                             <input type="file" id="foto_carro" accept="image/*" required class="w-full text-xs">
                         </div>
                     </div>
@@ -138,7 +139,7 @@
             <div class="flex gap-2 mb-6">
                 <input type="text" id="matriculaBusca" placeholder="Digite sua matrícula..."
                     class="w-full px-4 py-3 border border-slate-300 rounded-xl font-bold focus:ring-2 focus:ring-blue-600">
-                <button onclick="buscarMinhasSolicitacoes()" class="bg-blue-800 hover:bg-blue-900 text-white font-bold px-6 rounded-xl shrink-0">
+                <button onclick="buscarMinhasSolicitacoes()" class="bg-blue-800 hover:bg-blue-900 text-white font-bold px-6 rounded-xl shrink-0 transition shadow">
                     Buscar
                 </button>
             </div>
@@ -147,23 +148,37 @@
         </div>
     </div>
 
-    <!-- SCRIPT CORRIGIDO: Todo o código JS deve ficar DENTRO desta tag -->
+    <!-- SCRIPT DE FUNCIONAMENTO -->
     <script>
         let origemLancamento = 'CAMPO';
 
         // 1. AUTO-PREENCHIMENTO DO NOME VIA MATRÍCULA
-        document.getElementById('matricula').addEventListener('blur', async (e) => { 
-            const mat = e.target.value.trim(); 
-            if (mat) { 
-                const { data, error } = await supabaseClient.from('base_colaboradores').select('nome').eq('matricula', mat).single(); 
-                if (data && !error) { 
-                    const campoNome = document.getElementById('nome_solicitante'); 
-                    campoNome.value = data.nome; 
-                    campoNome.classList.add('bg-emerald-50', 'border-emerald-400'); 
-                    setTimeout(() => campoNome.classList.remove('bg-emerald-50', 'border-emerald-400'), 2000); 
-                } 
-            } 
-        });
+        const inputMatricula = document.getElementById('matricula');
+        const campoNome = document.getElementById('nome_solicitante');
+
+        async function buscarNomeColaborador() {
+            const mat = inputMatricula.value.trim();
+            if (mat.length > 0) {
+                campoNome.placeholder = "Buscando nome na base...";
+                
+                const { data, error } = await supabaseClient
+                    .from('base_colaboradores')
+                    .select('nome')
+                    .eq('matricula', mat)
+                    .single();
+                
+                if (data && !error) {
+                    campoNome.value = data.nome;
+                    campoNome.classList.add('bg-emerald-50', 'border-emerald-400', 'text-emerald-900', 'font-bold');
+                    setTimeout(() => campoNome.classList.remove('bg-emerald-50', 'border-emerald-400', 'text-emerald-900', 'font-bold'), 3000);
+                } else {
+                    campoNome.value = "";
+                    campoNome.placeholder = "Nome não encontrado. Digite manualmente.";
+                }
+            }
+        }
+        inputMatricula.addEventListener('blur', buscarNomeColaborador);
+        inputMatricula.addEventListener('change', buscarNomeColaborador);
 
         // 2. ALTERNÂNCIA DE ABAS
         function alternarAba(aba) {
@@ -174,16 +189,16 @@
 
             if (aba === 'solicitar') {
                 secSol.classList.remove('hidden'); secCon.classList.add('hidden');
-                tabSol.className = 'py-2.5 rounded-lg font-extrabold text-sm bg-white text-blue-900 shadow';
-                tabCon.className = 'py-2.5 rounded-lg font-extrabold text-sm text-slate-600';
+                tabSol.className = 'py-2.5 rounded-lg font-extrabold text-sm bg-white text-blue-900 shadow transition';
+                tabCon.className = 'py-2.5 rounded-lg font-extrabold text-sm text-slate-600 hover:text-slate-900 transition';
             } else {
                 secSol.classList.add('hidden'); secCon.classList.remove('hidden');
-                tabCon.className = 'py-2.5 rounded-lg font-extrabold text-sm bg-white text-blue-900 shadow';
-                tabSol.className = 'py-2.5 rounded-lg font-extrabold text-sm text-slate-600';
+                tabCon.className = 'py-2.5 rounded-lg font-extrabold text-sm bg-white text-blue-900 shadow transition';
+                tabSol.className = 'py-2.5 rounded-lg font-extrabold text-sm text-slate-600 hover:text-slate-900 transition';
             }
         }
 
-        // 3. CÁLCULO DE KM
+        // 3. CÁLCULO DE KM EM TEMPO REAL
         function calcularDelta() {
             const u = parseFloat(document.getElementById('km_ultimo').value) || 0;
             const a = parseFloat(document.getElementById('km_atual').value) || 0;
@@ -217,6 +232,7 @@
                     select.innerHTML = '<option value="GERAL">GERAL</option>';
                 }
 
+                // Verifica se há Gestor logado fazendo lançamento manual
                 const { data: { user } } = await supabaseClient.auth.getUser();
                 if (user) {
                     document.getElementById('btnVoltarPainel').classList.remove('hidden');
@@ -234,7 +250,7 @@
             }
         }
 
-        // 5. UPLOAD DE FOTOS
+        // 5. UPLOAD DE FOTOS PARA O SUPABASE STORAGE
         async function uploadFoto(inputElement, prefixo) {
             const file = inputElement.files[0];
             if (!file) throw new Error(`Você esqueceu de anexar a foto: ${prefixo}`);
@@ -243,7 +259,7 @@
             const fileName = `${prefixo}_${Date.now()}_${Math.random().toString(36).substring(7)}.${ext}`;
             
             const { error } = await supabaseClient.storage.from('fotos_recarga').upload(fileName, file);
-            if (error) throw new Error(`Falha no bucket de fotos (${prefixo}): ${error.message}`);
+            if (error) throw new Error(`Falha no envio da foto (${prefixo}): ${error.message}`);
             
             const { data } = supabaseClient.storage.from('fotos_recarga').getPublicUrl(fileName);
             return data.publicUrl;
@@ -256,17 +272,18 @@
             const kmAtual = parseFloat(document.getElementById('km_atual').value);
 
             if (kmAtual <= kmUltimo) {
-                alert('Erro: O KM Atual deve ser maior que o KM do Último Abastecimento!');
+                alert('Erro: O KM Atual deve ser estritamente maior que o KM do Último Abastecimento!');
                 return;
             }
 
             const btn = document.getElementById('btnEnviar');
             const msg = document.getElementById('msgResultado');
             btn.disabled = true;
-            btn.innerText = '⏳ Enviando as 4 fotos para o servidor... Pode demorar alguns segundos, não saia da página!';
+            btn.innerText = '⏳ Enviando as 4 fotos para o servidor... (Não feche a página)';
             msg.classList.add('hidden');
 
             try {
+                // Sobe as 4 imagens
                 const urlPainel = await uploadFoto(document.getElementById('foto_painel'), 'painel');
                 const urlMapa   = await uploadFoto(document.getElementById('foto_mapa'), 'mapa');
                 const urlCartao = await uploadFoto(document.getElementById('foto_cartao'), 'cartao');
@@ -274,6 +291,7 @@
 
                 const matriculaDigitada = document.getElementById('matricula').value.trim();
 
+                // Grava na Tabela de Solicitações
                 const { error } = await supabaseClient.from('solicitacoes_recarga').insert([{
                     projeto: document.getElementById('projeto').value,
                     matricula: matriculaDigitada,
@@ -296,8 +314,11 @@
                 msg.className = 'p-4 rounded-xl text-sm font-bold text-center mt-3 bg-emerald-100 text-emerald-900 border border-emerald-300';
                 msg.innerHTML = `✅ Solicitação enviada com sucesso! Acompanhe na aba "Consultar Minha Matrícula".`;
                 msg.classList.remove('hidden');
+                
+                // Reseta formulário e estados visuais
                 document.getElementById('formRecarga').reset();
                 document.getElementById('visorDelta').innerText = '0 km';
+                document.getElementById('alertaKmCampo').classList.add('hidden');
                 document.getElementById('matriculaBusca').value = matriculaDigitada;
 
             } catch (err) {
@@ -310,13 +331,13 @@
             }
         });
 
-        // 7. CONSULTA DE STATUS (ABA 2)
+        // 7. CONSULTA DE STATUS PELA MATRÍCULA (ABA 2)
         async function buscarMinhasSolicitacoes() {
             const mat = document.getElementById('matriculaBusca').value.trim();
             const container = document.getElementById('listaStatusCampo');
-            if (!mat) { alert('Digite sua matrícula!'); return; }
+            if (!mat) { alert('Digite sua matrícula para realizar a busca!'); return; }
 
-            container.innerHTML = '<p class="text-center text-slate-500 py-4">Buscando histórico...</p>';
+            container.innerHTML = '<p class="text-center text-slate-500 font-bold py-4">Buscando histórico...</p>';
 
             const { data, error } = await supabaseClient
                 .from('solicitacoes_recarga')
@@ -325,7 +346,7 @@
                 .order('criado_em', { ascending: false });
 
             if (error || !data || data.length === 0) {
-                container.innerHTML = '<div class="p-6 bg-slate-50 rounded-xl text-center text-slate-500 font-semibold">Nenhuma solicitação encontrada para esta matrícula.</div>';
+                container.innerHTML = '<div class="p-6 bg-slate-50 border border-slate-200 rounded-xl text-center text-slate-500 font-semibold shadow-sm">Nenhuma solicitação encontrada para esta matrícula.</div>';
                 return;
             }
 
@@ -334,29 +355,29 @@
                 let avisoExtra = '';
 
                 if (s.status === 'RECARGA_REALIZADA') {
-                    badge = '<span class="bg-emerald-600 text-white px-3 py-1 rounded-full text-xs font-extrabold">✅ RECARGA REALIZADA</span>';
+                    badge = '<span class="bg-emerald-600 text-white px-3 py-1 rounded-full text-[10px] sm:text-xs font-extrabold shadow-sm">✅ RECARGA REALIZADA</span>';
                     avisoExtra = `<div class="mt-2 p-2.5 bg-emerald-50 border border-emerald-200 rounded-lg text-xs text-emerald-900 font-bold">Saldo Liberado: R$ ${s.saldo_solicitado || '0,00'}</div>`;
                 } else if (s.status === 'PENDENTE') {
-                    badge = '<span class="bg-amber-500 text-white px-3 py-1 rounded-full text-xs font-extrabold">⚠️ PENDENTE DE AJUSTE</span>';
+                    badge = '<span class="bg-amber-500 text-white px-3 py-1 rounded-full text-[10px] sm:text-xs font-extrabold shadow-sm">⚠️ PENDENTE DE AJUSTE</span>';
                     avisoExtra = `<div class="mt-2 p-2.5 bg-amber-50 border border-amber-300 rounded-lg text-xs text-amber-900 font-bold">Motivo da Pendência: ${s.motivo_pendencia_recusa || 'Verifique com o ADM do seu projeto.'}</div>`;
                 } else if (s.status === 'RECUSADA') {
-                    badge = '<span class="bg-red-600 text-white px-3 py-1 rounded-full text-xs font-extrabold">❌ RECUSADA / CANCELADA</span>';
+                    badge = '<span class="bg-red-600 text-white px-3 py-1 rounded-full text-[10px] sm:text-xs font-extrabold shadow-sm">❌ RECUSADA / CANCELADA</span>';
                     avisoExtra = `<div class="mt-2 p-2.5 bg-red-50 border border-red-300 rounded-lg text-xs text-red-900 font-bold">Motivo da Recusa: ${s.motivo_pendencia_recusa || 'Não informado'}</div>`;
                 } else {
-                    badge = `<span class="bg-blue-100 text-blue-900 px-3 py-1 rounded-full text-xs font-extrabold">⏳ EM ANÁLISE (${s.status})</span>`;
+                    badge = `<span class="bg-blue-100 text-blue-900 px-3 py-1 rounded-full text-[10px] sm:text-xs font-extrabold shadow-sm border border-blue-200">⏳ EM ANÁLISE (${s.status})</span>`;
                 }
 
                 const dataFormatada = new Date(s.criado_em).toLocaleString('pt-BR');
 
                 return `
-                    <div class="p-4 rounded-xl border border-slate-200 shadow-sm bg-white">
-                        <div class="flex justify-between items-start gap-2 flex-wrap">
+                    <div class="p-4 rounded-xl border border-slate-200 shadow-sm bg-white hover:shadow-md transition">
+                        <div class="flex justify-between items-start gap-2 flex-wrap mb-1">
                             <div>
-                                <span class="text-xs font-bold text-slate-400">${dataFormatada}</span>
-                                <h3 class="font-extrabold text-slate-800 text-base">Placa: ${s.placa} <span class="text-xs font-semibold text-blue-700">(${s.projeto})</span></h3>
-                                <p class="text-xs text-slate-600">KM Rodado: <b>${s.delta_km || 'Calculando...'}</b> (${s.km_ultimo} &rarr; ${s.km_atual})</p>
+                                <span class="text-[10px] font-bold text-slate-400 uppercase tracking-wider">${dataFormatada}</span>
+                                <h3 class="font-extrabold text-slate-800 text-base mt-0.5">Placa: ${s.placa} <span class="text-xs font-semibold text-blue-700">(${s.projeto})</span></h3>
+                                <p class="text-xs text-slate-600 mt-1">KM Rodado: <b class="text-slate-800">${s.delta_km || 'Calculando...'} km</b> <span class="text-slate-400">(${s.km_ultimo} &rarr; ${s.km_atual})</span></p>
                             </div>
-                            ${badge}
+                            <div class="pt-1">${badge}</div>
                         </div>
                         ${avisoExtra}
                     </div>
