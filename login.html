@@ -3,79 +3,92 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Login Corporativo - PROCISA</title>
+    <title>Login - Gestão de Recargas PROCISA</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    <!-- O ficheiro config.js deve estar na mesma pasta e conter as suas chaves do Supabase -->
     <script src="config.js"></script>
 </head>
-<body class="bg-slate-100 min-h-screen flex items-center justify-center p-4">
+<body class="bg-slate-100 min-h-screen flex flex-col justify-between">
 
-    <div class="bg-white p-8 rounded-xl shadow-lg max-w-sm w-full border border-slate-200">
-        <div class="text-center mb-6">
-            <h1 class="text-2xl font-bold text-blue-900 tracking-wide">PROCISA</h1>
-            <p class="text-sm text-slate-500">Acesso Operacional</p>
-        </div>
-
-        <form id="formLogin" class="space-y-4">
+    <!-- Faixa Azul Padronizada -->
+    <header class="bg-blue-900 text-white px-6 py-4 shadow-lg border-b-4 border-blue-700">
+        <div class="max-w-7xl mx-auto flex flex-col md:flex-row justify-between items-center gap-3">
+            <div class="font-black text-xl tracking-wider text-blue-100">PROCISA</div>
+            <div class="text-center">
+                <h1 class="text-2xl font-extrabold tracking-widest uppercase text-white">GESTÃO DE RECARGAS</h1>
+                <p class="text-xs text-blue-200 font-medium tracking-wide mt-0.5">Gestor Luis Manuel Luviano Saldana</p>
+            </div>
             <div>
-                <label class="block text-sm font-medium text-slate-700 mb-1">Matrícula</label>
-                <input type="text" id="matricula" required placeholder="Ex: 12345"
-                    class="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-600 focus:outline-none">
+                <a href="index.html" class="text-xs bg-blue-800 hover:bg-blue-700 px-3 py-2 rounded border border-blue-600 transition font-semibold">
+                    Ir para Modo Campo &rarr;
+                </a>
+            </div>
+        </div>
+    </header>
+
+    <!-- Card Central de Login -->
+    <main class="flex-grow flex items-center justify-center p-4">
+        <div class="bg-white p-8 rounded-2xl shadow-xl max-w-md w-full border border-slate-200">
+            <div class="text-center mb-6">
+                <span class="bg-blue-100 text-blue-800 text-xs font-bold px-3 py-1 rounded-full uppercase">Acesso Restrito</span>
+                <h2 class="text-xl font-bold text-slate-800 mt-3">Painel Administrativo e Gestão</h2>
+                <p class="text-xs text-slate-500 mt-1">Entre com sua matrícula e senha cadastrada</p>
             </div>
 
-            <div>
-                <label class="block text-sm font-medium text-slate-700 mb-1">Senha</label>
-                <input type="password" id="senha" required placeholder="••••••••"
-                    class="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-600 focus:outline-none">
+            <form id="formLogin" class="space-y-4">
+                <div>
+                    <label class="block text-sm font-bold text-slate-700 mb-1">Matrícula</label>
+                    <input type="text" id="matricula" required placeholder="Ex: 00000 ou 150311"
+                        class="w-full px-4 py-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-600 focus:outline-none font-semibold text-slate-800">
+                </div>
+
+                <div>
+                    <label class="block text-sm font-bold text-slate-700 mb-1">Senha</label>
+                    <input type="password" id="senha" required placeholder="••••••••"
+                        class="w-full px-4 py-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-600 focus:outline-none">
+                </div>
+
+                <button type="submit" id="btnEntrar"
+                    class="w-full bg-blue-800 hover:bg-blue-900 text-white font-bold py-3 rounded-lg transition shadow-md mt-2">
+                    Entrar no Sistema
+                </button>
+            </form>
+
+            <div id="msgErro" class="mt-4 p-3 rounded-lg text-sm bg-red-100 text-red-800 border border-red-300 hidden font-medium text-center"></div>
+
+            <div class="mt-6 pt-4 border-t border-slate-100 text-center">
+                <a href="index.html" class="text-sm font-semibold text-blue-700 hover:underline">&larr; Solicitar Recarga / Consultar Matrícula (Campo)</a>
             </div>
-
-            <button type="submit" id="btnEntrar"
-                class="w-full bg-blue-700 hover:bg-blue-800 text-white font-semibold py-2.5 rounded-lg transition shadow mt-2">
-                Entrar no Sistema
-            </button>
-        </form>
-
-        <!-- Mensagem de Erro -->
-        <div id="msgErro" class="mt-4 p-3 rounded-lg text-sm bg-red-100 text-red-800 border border-red-300 hidden"></div>
-        
-        <div class="mt-6 text-center">
-            <a href="index.html" class="text-sm text-blue-600 hover:underline">&larr; Voltar para Solicitações de Campo</a>
         </div>
-    </div>
+    </main>
+
+    <footer class="text-center py-3 text-xs text-slate-400">PROCISA DO BRASIL - Sistema Operacional de Recargas</footer>
 
     <script>
         document.getElementById('formLogin').addEventListener('submit', async (e) => {
             e.preventDefault();
-            
             const btn = document.getElementById('btnEntrar');
             const msgErro = document.getElementById('msgErro');
             
-            // Estado de carregamento
             btn.disabled = true;
             btn.innerText = 'Autenticando...';
             msgErro.classList.add('hidden');
 
             const matricula = document.getElementById('matricula').value.trim();
             const password = document.getElementById('senha').value;
-            
-            // O truque: Cria um e-mail interno falso baseado na matrícula com o domínio autorizado
-            const emailFalso = matricula + '@procisa.com.br';
+            const emailCorporativo = matricula + '@procisa.com.br';
 
-            // Tenta fazer o login no Supabase
             const { data, error } = await supabaseClient.auth.signInWithPassword({
-                email: emailFalso,
+                email: emailCorporativo,
                 password: password,
             });
 
             if (error) {
-                // Se falhar, mostra o erro e reativa o botão
                 btn.disabled = false;
                 btn.innerText = 'Entrar no Sistema';
                 msgErro.classList.remove('hidden');
-                msgErro.innerText = 'Matrícula ou senha incorretos.'; 
+                msgErro.innerText = 'Matrícula ou senha incorretos.';
             } else {
-                // Se tiver sucesso, redireciona para o painel de gestão
                 window.location.href = 'painel.html';
             }
         });
