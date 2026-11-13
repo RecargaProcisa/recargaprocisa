@@ -8,7 +8,7 @@
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="config.js"></script>
 </head>
-<body class="bg-slate-100 min-h-screen text-slate-800">
+<body class="bg-slate-100 min-h-screen text-slate-800 pb-12">
 
     <!-- Faixa Azul Padronizada -->
     <header class="bg-blue-900 text-white px-6 py-4 shadow-lg border-b-4 border-blue-700">
@@ -22,10 +22,10 @@
                 <p class="text-xs text-blue-200 font-medium tracking-wide mt-0.5">Gestor Luis Manuel Luviano Saldana</p>
             </div>
             <div class="flex gap-2 justify-center md:justify-end">
-                <a href="index.html?modo=manual" class="text-xs bg-emerald-600 hover:bg-emerald-500 px-3 py-2 rounded font-bold transition">
+                <a href="index.html?modo=manual" class="text-xs bg-emerald-600 hover:bg-emerald-500 px-3 py-2 rounded font-bold transition shadow">
                     + Solicitação Manual
                 </a>
-                <a href="painel.html" class="text-xs bg-slate-700 hover:bg-slate-600 px-4 py-2 rounded border border-slate-500 transition font-bold">
+                <a href="painel.html" class="text-xs bg-slate-700 hover:bg-slate-600 px-4 py-2 rounded border border-slate-500 transition font-bold shadow">
                     &larr; Painel
                 </a>
             </div>
@@ -34,22 +34,18 @@
 
     <main class="p-6 max-w-7xl mx-auto">
         
-        <!-- Filtros Rápidos de Status e Projeto -->
-        <div class="bg-white p-4 rounded-2xl shadow-sm border border-slate-200 mb-6 flex flex-wrap justify-between items-center gap-4">
-            <div class="flex flex-wrap gap-2" id="botoesFiltroStatus">
-                <button onclick="filtrarStatus('TODOS')" class="btn-status bg-blue-900 text-white px-3.5 py-2 rounded-lg text-xs font-extrabold"> Todas</button>
-                <button onclick="filtrarStatus('NOVA')" class="btn-status bg-slate-100 text-slate-700 hover:bg-slate-200 px-3.5 py-2 rounded-lg text-xs font-extrabold">🆕 Novas (ADM)</button>
-                <button onclick="filtrarStatus('AGUARDANDO_GESTAO')" class="btn-status bg-slate-100 text-slate-700 hover:bg-slate-200 px-3.5 py-2 rounded-lg text-xs font-extrabold">🟠 Aguard. Coordenação</button>
-                <button onclick="filtrarStatus('AGUARDANDO_RECARGA')" class="btn-status bg-slate-100 text-slate-700 hover:bg-slate-200 px-3.5 py-2 rounded-lg text-xs font-extrabold">🟣 Aguard. Vale Card</button>
-                <button onclick="filtrarStatus('PENDENTE')" class="btn-status bg-slate-100 text-slate-700 hover:bg-slate-200 px-3.5 py-2 rounded-lg text-xs font-extrabold">⚠️ Pendentes</button>
-                <button onclick="filtrarStatus('RECARGA_REALIZADA')" class="btn-status bg-slate-100 text-slate-700 hover:bg-slate-200 px-3.5 py-2 rounded-lg text-xs font-extrabold">✅ Realizadas</button>
-                <button onclick="filtrarStatus('RECUSADA')" class="btn-status bg-slate-100 text-slate-700 hover:bg-slate-200 px-3.5 py-2 rounded-lg text-xs font-extrabold">❌ Recusadas</button>
-            </div>
+        <!-- Bloco de Filtros Inteligentes e Rastreador -->
+        <div class="bg-white p-5 rounded-2xl shadow-md border border-slate-200 mb-6 flex flex-col md:flex-row justify-between items-center gap-4">
+            
+            <!-- Botões dinâmicos preenchidos via JS -->
+            <div class="flex flex-wrap gap-2" id="botoesFiltroStatus"></div>
 
-            <div class="flex items-center gap-2">
-                <input type="text" id="buscaPlacaMatricula" oninput="renderizarTabela()" placeholder="Buscar Placa ou Matrícula..."
-                    class="px-3 py-2 border border-slate-300 rounded-lg text-xs font-bold focus:outline-none focus:ring-2 focus:ring-blue-600">
-                <button onclick="carregarSolicitacoes()" class="bg-slate-200 hover:bg-slate-300 px-3 py-2 rounded-lg text-xs font-bold">🔄 Atualizar</button>
+            <!-- Rastreador de Placas -->
+            <div class="flex items-center gap-2 w-full md:w-auto relative">
+                <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-slate-400">🔍</div>
+                <input type="text" id="buscaRastreio" oninput="executarRastreio()" placeholder="Rastrear Placa ou Matrícula..."
+                    class="w-full md:w-72 pl-9 pr-3 py-2.5 border-2 border-slate-300 rounded-lg text-sm font-black uppercase tracking-wider focus:outline-none focus:border-blue-600 focus:ring-1 focus:ring-blue-600 placeholder-slate-400 transition">
+                <button onclick="carregarSolicitacoes()" class="bg-slate-200 hover:bg-slate-300 text-slate-700 px-3 py-2.5 rounded-lg text-sm font-bold shadow-sm transition">🔄</button>
             </div>
         </div>
 
@@ -63,14 +59,13 @@
                             <th class="p-4 font-extrabold">Projeto</th>
                             <th class="p-4 font-extrabold">Colaborador / Mat.</th>
                             <th class="p-4 font-extrabold">Placa</th>
-                            <th class="p-4 font-extrabold">Parâmetro KM</th>
-                            <th class="p-4 font-extrabold">Valor / Motivo</th>
-                            <th class="p-4 font-extrabold">Status Atual</th>
+                            <th class="p-4 font-extrabold">KM / Saldo</th>
+                            <th class="p-4 font-extrabold">Status / Fase Atual</th>
                             <th class="p-4 text-center font-extrabold">Ação</th>
                         </tr>
                     </thead>
                     <tbody id="tabelaSolicitacoes" class="text-sm divide-y divide-slate-200">
-                        <tr><td colspan="8" class="p-8 text-center text-slate-500">Carregando fila de solicitações...</td></tr>
+                        <tr><td colspan="7" class="p-8 text-center text-slate-500 font-bold">Carregando esteira...</td></tr>
                     </tbody>
                 </table>
             </div>
@@ -79,58 +74,53 @@
 
     <!-- MODAL COMPLETO DE AUDITORIA E TRATATIVA -->
     <div id="modalAnalise" class="hidden fixed inset-0 bg-black/70 z-50 flex items-center justify-center p-4 overflow-y-auto">
-        <div class="bg-white rounded-2xl max-w-4xl w-full p-6 shadow-2xl my-8 max-h-[92vh] overflow-y-auto">
+        <div class="bg-white rounded-2xl max-w-4xl w-full p-6 shadow-2xl my-8 max-h-[92vh] overflow-y-auto relative">
             
-            <div class="flex justify-between items-start border-b pb-3 mb-4">
-                <div>
-                    <span id="modalStatusBadge" class="text-xs font-extrabold px-2.5 py-1 rounded uppercase">STATUS</span>
-                    <h2 id="modalTitulo" class="text-xl font-black text-blue-900 mt-1">Análise de Solicitação</h2>
-                </div>
-                <button onclick="fecharModal()" class="text-slate-400 hover:text-slate-700 text-2xl font-black">&times;</button>
+            <button onclick="fecharModal()" class="absolute top-4 right-4 text-slate-400 hover:text-slate-800 text-3xl font-black">&times;</button>
+            
+            <div class="border-b pb-3 mb-4 pr-8">
+                <span id="modalStatusBadge" class="text-xs font-extrabold px-2.5 py-1 rounded uppercase">STATUS</span>
+                <h2 id="modalTitulo" class="text-xl font-black text-blue-900 mt-2">Análise de Solicitação</h2>
             </div>
 
             <!-- Resumo de Dados e Rastro de Auditoria -->
             <div id="modalResumoDados" class="grid grid-cols-1 md:grid-cols-3 gap-3 bg-slate-50 p-4 rounded-xl border border-slate-200 text-xs mb-4"></div>
 
-            <!-- Alerta de Exceção de KM (< 260 km) -->
-            <div id="modalAlertaKm" class="hidden p-3.5 rounded-xl bg-red-100 border-2 border-red-400 text-red-900 text-xs font-bold mb-4">
-                🚨 ALERTA FORA DE PARÂMETRO: Este veículo rodou menos de 260 KM desde o último abastecimento! Para aprovar, é obrigatório preencher a Justificativa de Exceção de KM abaixo.
+            <!-- Alerta KM -->
+            <div id="modalAlertaKm" class="hidden p-3.5 rounded-xl bg-red-100 border-2 border-red-400 text-red-900 text-xs font-bold mb-4 shadow-sm">
+                🚨 ALERTA FORA DE PARÂMETRO: Veículo rodou menos de 260 KM! Justificativa de Exceção obrigatória para aprovar.
             </div>
 
-            <!-- As 4 Fotos Obrigatórias (Clique amplia em nova guia) -->
-            <h3 class="text-xs font-extrabold uppercase text-slate-500 mb-2">Evidências Fotográficas (Clique na foto para ampliar)</h3>
+            <!-- Galeria de Fotos -->
+            <h3 class="text-xs font-extrabold uppercase text-slate-500 mb-2">Evidências Fotográficas</h3>
             <div id="modalGaleriaFotos" class="grid grid-cols-2 md:grid-cols-4 gap-3 mb-6"></div>
 
-            <!-- Área de Preenchimento ADM / Bypass Coordenador -->
-            <div id="blocoCamposAdm" class="space-y-3 bg-blue-50/60 p-4 rounded-xl border border-blue-200 mb-4 hidden">
-                <h4 class="text-xs font-black uppercase text-blue-900">Dados de Validação Primária (ADM / Coordenação)</h4>
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+            <!-- Área de Preenchimento ADM / Bypass -->
+            <div id="blocoCamposAdm" class="space-y-3 bg-blue-50/60 p-5 rounded-xl border border-blue-200 mb-4 hidden shadow-inner">
+                <h4 class="text-xs font-black uppercase text-blue-900 flex items-center gap-2">🛠️ Dados de Validação (ADM / Coordenação)</h4>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div>
                         <label class="block text-xs font-bold text-slate-700 mb-1">Motivo da Recarga *</label>
-                        <input type="text" id="inputMotivoRecarga" placeholder="Ex: Rota semanal de atendimento"
-                            class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm font-semibold bg-white">
+                        <input type="text" id="inputMotivoRecarga" placeholder="Ex: Rota semanal" class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm font-semibold bg-white focus:ring-2 focus:ring-blue-600">
                     </div>
                     <div>
                         <label class="block text-xs font-bold text-slate-700 mb-1">Saldo Solicitado (R$) *</label>
-                        <input type="number" step="0.01" id="inputSaldoSolicitado" placeholder="Ex: 250.00"
-                            class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm font-bold bg-white">
+                        <input type="number" step="0.01" id="inputSaldoSolicitado" placeholder="Ex: 250.00" class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm font-bold bg-white text-emerald-700 focus:ring-2 focus:ring-blue-600">
                     </div>
                 </div>
-                <div id="divJustificativaKm" class="hidden">
+                <div id="divJustificativaKm" class="hidden mt-3">
                     <label class="block text-xs font-extrabold text-red-700 mb-1">Justificativa Obrigatória de Exceção (< 260 KM) *</label>
-                    <textarea id="inputJustificativaKm" rows="2" placeholder="Explique por que a recarga está sendo autorizada antes dos 260 km..."
-                        class="w-full px-3 py-2 border-2 border-red-300 rounded-lg text-sm bg-white"></textarea>
+                    <textarea id="inputJustificativaKm" rows="2" placeholder="Explique por que a recarga está sendo autorizada..." class="w-full px-3 py-2 border-2 border-red-300 rounded-lg text-sm bg-white focus:ring-2 focus:ring-red-600"></textarea>
                 </div>
             </div>
 
-            <!-- Campo de Observação / Motivo para Pendência ou Recusa -->
-            <div class="mb-6">
-                <label class="block text-xs font-bold text-slate-700 mb-1">Motivo de Pendência / Recusa (Obrigatório se colocar em Pendente ou Recusar)</label>
-                <input type="text" id="inputMotivoPendenciaRecusa" placeholder="Ex: Foto do cartão ilegível / KM incorreto..."
-                    class="w-full px-3 py-2.5 border border-slate-300 rounded-lg text-sm">
+            <!-- Campo Pendência/Recusa -->
+            <div class="mb-6 bg-slate-50 p-4 rounded-xl border border-slate-200">
+                <label class="block text-xs font-bold text-slate-700 mb-1">Motivo de Pendência / Recusa <span class="text-slate-400 font-normal">(Obrigatório ao recusar/pendenciar)</span></label>
+                <input type="text" id="inputMotivoPendenciaRecusa" placeholder="Ex: Foto do painel embaçada, favor reenviar..." class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-amber-500">
             </div>
 
-            <!-- Botões Dinâmicos da Máquina de Estados -->
+            <!-- Botões Máquina de Estados -->
             <div id="modalBotoesAcao" class="flex flex-wrap justify-end gap-3 pt-4 border-t border-slate-200"></div>
         </div>
     </div>
@@ -138,8 +128,9 @@
     <script>
         let usuarioLogado = null;
         let listaCompleta = [];
-        let filtroAtual = 'TODOS';
+        let filtroFase = ''; // Controla qual esteira estamos a ver
         let solicitacaoAberta = null;
+        let modoBypassAtivo = false; // Controla se o Coordenador ativou o Modo ADM
 
         async function iniciar() {
             const { data: { user } } = await supabaseClient.auth.getUser();
@@ -148,112 +139,169 @@
             const { data: perfil } = await supabaseClient.from('perfis_usuarios').select('*').eq('id', user.id).single();
             if (!perfil) { window.location.href = 'painel.html'; return; }
 
-            usuarioLogado = {
-                id: user.id,
-                nome: perfil.nome,
-                role: perfil.perfil,
-                projetos: perfil.projetos || []
-            };
-
+            usuarioLogado = { id: user.id, nome: perfil.nome, role: perfil.perfil, projetos: perfil.projetos || [] };
             document.getElementById('badgePerfilHeader').innerText = `${usuarioLogado.role} (${usuarioLogado.nome})`;
+            
+            // Define a esteira padrão com base no perfil (Regra 01)
+            if (usuarioLogado.role === 'ADM') filtroFase = 'ESTEIRA_ADM';
+            else if (usuarioLogado.role === 'GESTAO_CAMPO') filtroFase = 'ESTEIRA_COORDENADOR';
+            else if (usuarioLogado.role === 'MASTER') filtroFase = 'ESTEIRA_MASTER';
+
+            renderizarBotoesFiltro();
             await carregarSolicitacoes();
         }
 
-        async function carregarSolicitacoes() {
-            const { data, error } = await supabaseClient
-                .from('solicitacoes_recarga')
-                .select('*')
-                .order('criado_em', { ascending: false });
+        function renderizarBotoesFiltro() {
+            const container = document.getElementById('botoesFiltroStatus');
+            let botoesHTML = '';
 
-            if (error) {
-                alert('Erro ao carregar solicitações: ' + error.message);
-                return;
+            if (usuarioLogado.role === 'ADM') {
+                botoesHTML = `
+                    <button onclick="mudarFase('ESTEIRA_ADM')" class="${filtroFase === 'ESTEIRA_ADM' ? 'bg-blue-900 text-white' : 'bg-slate-100 text-slate-700 hover:bg-slate-200'} px-4 py-2.5 rounded-lg text-xs font-extrabold shadow-sm transition">Fila de Ação (Novas/Pendentes)</button>
+                    <button onclick="mudarFase('HISTORICO')" class="${filtroFase === 'HISTORICO' ? 'bg-blue-900 text-white' : 'bg-slate-100 text-slate-700 hover:bg-slate-200'} px-4 py-2.5 rounded-lg text-xs font-extrabold shadow-sm transition">Histórico (Enviadas/Concluídas)</button>
+                `;
+            } 
+            else if (usuarioLogado.role === 'GESTAO_CAMPO') {
+                // Regra 02: Botão para o Coordenador entrar no Modo ADM
+                botoesHTML = `
+                    <button onclick="mudarFase('ESTEIRA_COORDENADOR')" class="${filtroFase === 'ESTEIRA_COORDENADOR' ? 'bg-orange-600 text-white' : 'bg-slate-100 text-slate-700 hover:bg-slate-200'} px-4 py-2.5 rounded-lg text-xs font-extrabold shadow-sm transition">Fila Coordenação (Aguard. Gestão)</button>
+                    <button onclick="mudarFase('ESTEIRA_ADM')" class="${filtroFase === 'ESTEIRA_ADM' ? 'bg-blue-800 text-white ring-2 ring-blue-400' : 'bg-blue-50 text-blue-800 border border-blue-200 hover:bg-blue-100'} px-4 py-2.5 rounded-lg text-xs font-extrabold shadow-sm transition flex items-center gap-1">🛠️ Trocar p/ Modo ADM</button>
+                    <button onclick="mudarFase('HISTORICO')" class="${filtroFase === 'HISTORICO' ? 'bg-slate-700 text-white' : 'bg-slate-100 text-slate-700 hover:bg-slate-200'} px-4 py-2.5 rounded-lg text-xs font-extrabold shadow-sm transition">Histórico</button>
+                `;
+            }
+            else if (usuarioLogado.role === 'MASTER') {
+                botoesHTML = `
+                    <button onclick="mudarFase('ESTEIRA_MASTER')" class="${filtroFase === 'ESTEIRA_MASTER' ? 'bg-purple-800 text-white' : 'bg-slate-100 text-slate-700 hover:bg-slate-200'} px-4 py-2.5 rounded-lg text-xs font-extrabold shadow-sm transition">Fila Vale Card (Aguard. Recarga)</button>
+                    <button onclick="mudarFase('TODAS')" class="${filtroFase === 'TODAS' ? 'bg-slate-800 text-white' : 'bg-slate-100 text-slate-700 hover:bg-slate-200'} px-4 py-2.5 rounded-lg text-xs font-extrabold shadow-sm transition">Visão Global (Todas)</button>
+                `;
             }
 
-            // Regras de Visibilidade por Perfil:
-            // - ADM: Vê apenas solicitações dos seus projetos vinculados
-            // - GESTAO_CAMPO: Vê todas AGUARDANDO_GESTAO (global) + todas dos seus projetos vinculados (para Bypass ADM e acompanhamento)
-            // - MASTER: Vê todas de todos os projetos
-            listaCompleta = (data || []).filter(s => {
-                if (usuarioLogado.role === 'MASTER') return true;
-                if (usuarioLogado.role === 'ADM') {
-                    return usuarioLogado.projetos.includes(s.projeto);
-                }
-                if (usuarioLogado.role === 'GESTAO_CAMPO') {
-                    return s.status === 'AGUARDANDO_GESTAO' || usuarioLogado.projetos.includes(s.projeto);
-                }
-                return false;
-            });
+            container.innerHTML = botoesHTML;
+        }
 
+        function mudarFase(novaFase) {
+            filtroFase = novaFase;
+            modoBypassAtivo = (novaFase === 'ESTEIRA_ADM' && usuarioLogado.role === 'GESTAO_CAMPO');
+            document.getElementById('buscaRastreio').value = ''; // Limpa a busca ao trocar de aba
+            renderizarBotoesFiltro();
             renderizarTabela();
         }
 
-        function filtrarStatus(st) {
-            filtroAtual = st;
-            document.querySelectorAll('.btn-status').forEach(b => {
-                b.className = 'btn-status bg-slate-100 text-slate-700 hover:bg-slate-200 px-3.5 py-2 rounded-lg text-xs font-extrabold';
-            });
-            event.target.className = 'btn-status bg-blue-900 text-white px-3.5 py-2 rounded-lg text-xs font-extrabold';
+        async function carregarSolicitacoes() {
+            const tbody = document.getElementById('tabelaSolicitacoes');
+            tbody.innerHTML = '<tr><td colspan="7" class="p-8 text-center text-blue-600 font-bold">Atualizando banco de dados...</td></tr>';
+
+            const { data, error } = await supabaseClient.from('solicitacoes_recarga').select('*').order('criado_em', { ascending: false });
+            
+            if (error) { alert('Erro: ' + error.message); return; }
+            listaCompleta = data || [];
+            renderizarTabela();
+        }
+
+        // Regra 03: Rastreio Global (Ignora os filtros da esteira e busca em todo o BD permitido)
+        function executarRastreio() {
             renderizarTabela();
         }
 
         function renderizarTabela() {
             const tbody = document.getElementById('tabelaSolicitacoes');
-            const termo = document.getElementById('buscaPlacaMatricula').value.trim().toUpperCase();
-
+            const termoBusca = document.getElementById('buscaRastreio').value.trim().toUpperCase();
+            
+            // Filtra os dados de acordo com a regra de visualização e a busca
             const filtradas = listaCompleta.filter(s => {
-                const bateStatus = (filtroAtual === 'TODOS') || (s.status === filtroAtual);
-                const bateTermo = !termo || 
-                    (s.placa && s.placa.toUpperCase().includes(termo)) || 
-                    (s.matricula && s.matricula.toUpperCase().includes(termo)) ||
-                    (s.nome_solicitante && s.nome_solicitante.toUpperCase().includes(termo));
-                return bateStatus && bateTermo;
+                
+                // SEGURANÇA BASE: O utilizador pode ver esta linha?
+                let permissaoLeitura = false;
+                if (usuarioLogado.role === 'MASTER') permissaoLeitura = true;
+                else if (usuarioLogado.role === 'ADM') permissaoLeitura = usuarioLogado.projetos.includes(s.projeto);
+                else if (usuarioLogado.role === 'GESTAO_CAMPO') {
+                    // Coord vê as que estão pendentes para ele globalmente OU tudo dos seus projetos (necessário para o modo ADM e busca)
+                    permissaoLeitura = (s.status === 'AGUARDANDO_GESTAO') || usuarioLogado.projetos.includes(s.projeto);
+                }
+
+                if (!permissaoLeitura) return false;
+
+                // SE ESTIVER BUSCANDO PELA PLACA/MATRÍCULA, IGNORA A ESTEIRA (Modo Rastreio)
+                if (termoBusca !== '') {
+                    return (s.placa && s.placa.toUpperCase().includes(termoBusca)) || 
+                           (s.matricula && s.matricula.toUpperCase().includes(termoBusca));
+                }
+
+                // SE NÃO HOUVER BUSCA, APLICA A REGRA DA ESTEIRA SELECIONADA
+                if (filtroFase === 'ESTEIRA_ADM') return s.status === 'NOVA' || s.status === 'PENDENTE';
+                if (filtroFase === 'ESTEIRA_COORDENADOR') return s.status === 'AGUARDANDO_GESTAO';
+                if (filtroFase === 'ESTEIRA_MASTER') return s.status === 'AGUARDANDO_RECARGA';
+                if (filtroFase === 'HISTORICO') return s.status === 'AGUARDANDO_GESTAO' || s.status === 'AGUARDANDO_RECARGA' || s.status === 'RECARGA_REALIZADA' || s.status === 'RECUSADA';
+                if (filtroFase === 'TODAS') return true;
+
+                return false;
             });
 
             if (filtradas.length === 0) {
-                tbody.innerHTML = '<tr><td colspan="8" class="p-8 text-center text-slate-400 font-semibold">Nenhuma solicitação encontrada para este filtro.</td></tr>';
+                tbody.innerHTML = `<tr><td colspan="7" class="p-8 text-center text-slate-400 font-semibold">${termoBusca ? 'Nenhuma recarga encontrada com essa Placa/Matrícula.' : 'Fila limpa! Nenhuma solicitação nesta esteira.'}</td></tr>`;
                 return;
             }
 
             tbody.innerHTML = filtradas.map(s => {
-                const kmForaParametro = s.delta_km < 260;
-                const tagKm = kmForaParametro
-                    ? `<span class="bg-red-100 text-red-800 border border-red-300 px-2 py-0.5 rounded text-xs font-black">🚨 ${s.delta_km} km (<260)</span>`
+                // Cálculo de Fase onde a solicitação está "Parada"
+                let faseParada = '';
+                let corStatus = 'bg-slate-100 text-slate-800';
+                
+                if (s.status === 'NOVA' || s.status === 'PENDENTE') {
+                    faseParada = '📍 PARADO NO ADM';
+                    corStatus = s.status === 'NOVA' ? 'bg-blue-100 text-blue-900 border-blue-300' : 'bg-amber-100 text-amber-900 border-amber-300';
+                }
+                else if (s.status === 'AGUARDANDO_GESTAO') {
+                    faseParada = '📍 PARADO NO COORDENADOR';
+                    corStatus = 'bg-orange-100 text-orange-900 border-orange-300';
+                }
+                else if (s.status === 'AGUARDANDO_RECARGA') {
+                    faseParada = '📍 PARADO NO MASTER (VALE CARD)';
+                    corStatus = 'bg-purple-100 text-purple-900 border-purple-300';
+                }
+                else if (s.status === 'RECARGA_REALIZADA') {
+                    faseParada = '✅ CONCLUÍDO';
+                    corStatus = 'bg-emerald-100 text-emerald-900 border-emerald-300';
+                }
+                else if (s.status === 'RECUSADA') {
+                    faseParada = '❌ CANCELADO';
+                    corStatus = 'bg-red-100 text-red-900 border-red-300';
+                }
+
+                const tagKm = s.delta_km < 260
+                    ? `<span class="bg-red-100 text-red-800 px-2 py-0.5 rounded text-xs font-black">🚨 ${s.delta_km} km (<260)</span>`
                     : `<span class="bg-emerald-100 text-emerald-800 px-2 py-0.5 rounded text-xs font-bold">✅ ${s.delta_km} km</span>`;
 
-                const coresStatus = {
-                    'NOVA': 'bg-blue-100 text-blue-900 border-blue-300',
-                    'AGUARDANDO_GESTAO': 'bg-orange-100 text-orange-900 border-orange-300',
-                    'AGUARDANDO_RECARGA': 'bg-purple-100 text-purple-900 border-purple-300',
-                    'RECARGA_REALIZADA': 'bg-emerald-100 text-emerald-900 border-emerald-300',
-                    'PENDENTE': 'bg-amber-100 text-amber-900 border-amber-300',
-                    'RECUSADA': 'bg-red-100 text-red-900 border-red-300'
-                };
+                // Botão Ativo apenas se a solicitação estiver na fase correta para o utilizador atuar
+                let podeAtuar = false;
+                if (usuarioLogado.role === 'ADM' && (s.status === 'NOVA' || s.status === 'PENDENTE')) podeAtuar = true;
+                if (usuarioLogado.role === 'GESTAO_CAMPO' && s.status === 'AGUARDANDO_GESTAO') podeAtuar = true;
+                if (usuarioLogado.role === 'GESTAO_CAMPO' && modoBypassAtivo && (s.status === 'NOVA' || s.status === 'PENDENTE')) podeAtuar = true;
+                if (usuarioLogado.role === 'MASTER' && s.status === 'AGUARDANDO_RECARGA') podeAtuar = true;
+
+                const botaoAcao = podeAtuar
+                    ? `<button onclick='abrirModal(${JSON.stringify(s)})' class="bg-blue-800 hover:bg-blue-900 text-white px-4 py-2 rounded-lg text-xs font-bold shadow transition w-full">Tratar Fila &rarr;</button>`
+                    : `<button onclick='abrirModal(${JSON.stringify(s)})' class="bg-slate-200 hover:bg-slate-300 text-slate-700 px-4 py-2 rounded-lg text-xs font-bold transition w-full">Ver Detalhes</button>`;
 
                 return `
-                    <tr class="hover:bg-slate-50 transition">
-                        <td class="p-4 text-xs text-slate-500 font-medium">${new Date(s.criado_em).toLocaleString('pt-BR')}</td>
+                    <tr class="hover:bg-slate-50 transition border-b border-slate-100">
+                        <td class="p-4 text-xs text-slate-500 font-medium whitespace-nowrap">${new Date(s.criado_em).toLocaleString('pt-BR').replace(',','<br>')}</td>
                         <td class="p-4 font-extrabold text-blue-900">${s.projeto || '-'}</td>
                         <td class="p-4">
-                            <div class="font-bold text-slate-800">${s.nome_solicitante || '-'}</div>
+                            <div class="font-bold text-slate-800 truncate max-w-[150px]">${s.nome_solicitante || '-'}</div>
                             <div class="text-xs text-slate-500">Mat: <b>${s.matricula}</b></div>
                         </td>
-                        <td class="p-4 font-black tracking-wider text-slate-800">${s.placa || '-'}</td>
+                        <td class="p-4 font-black tracking-widest text-slate-800 bg-slate-50 text-center rounded">${s.placa || '-'}</td>
                         <td class="p-4">
-                            ${tagKm}
-                            <div class="text-[11px] text-slate-400 mt-0.5">${s.km_ultimo} &rarr; ${s.km_atual}</div>
-                        </td>
-                        <td class="p-4 text-xs">
-                            ${s.saldo_solicitado ? `<div class="font-black text-emerald-700 text-sm">R$ ${s.saldo_solicitado}</div>` : '<span class="text-slate-400">Aguard. ADM</span>'}
-                            ${s.motivo_recarga ? `<div class="text-slate-600 truncate max-w-[160px]">${s.motivo_recarga}</div>` : ''}
+                            <div class="mb-1">${tagKm}</div>
+                            ${s.saldo_solicitado ? `<div class="font-black text-emerald-700 text-xs">R$ ${s.saldo_solicitado}</div>` : ''}
                         </td>
                         <td class="p-4">
-                            <span class="px-2.5 py-1 rounded-full text-xs font-extrabold border ${coresStatus[s.status] || 'bg-slate-100'}">${s.status}</span>
+                            <div class="px-2.5 py-1 rounded text-xs font-extrabold border ${corStatus} inline-block mb-1">${s.status}</div>
+                            <div class="text-[10px] font-bold text-slate-500 uppercase tracking-wider">${faseParada}</div>
                         </td>
                         <td class="p-4 text-center">
-                            <button onclick='abrirModal(${JSON.stringify(s)})' class="bg-blue-800 hover:bg-blue-900 text-white px-4 py-2 rounded-lg text-xs font-bold shadow transition">
-                                Analisar / Tratar
-                            </button>
+                            ${botaoAcao}
                         </td>
                     </tr>
                 `;
@@ -266,167 +314,144 @@
             document.getElementById('modalStatusBadge').innerText = s.status;
             document.getElementById('modalTitulo').innerText = `Placa ${s.placa} — Projeto ${s.projeto}`;
 
-            // Preenche Resumo e Auditoria Completa
             document.getElementById('modalResumoDados').innerHTML = `
                 <div>
-                    <p class="text-slate-400 font-bold uppercase">Solicitante (Campo)</p>
-                    <p class="font-extrabold text-slate-800 text-sm">${s.nome_solicitante} (Mat: ${s.matricula})</p>
-                    <p class="text-slate-500">Origem: ${s.origem_lancamento || 'CAMPO'}</p>
-                    <p class="text-slate-500">KM: ${s.km_ultimo} &rarr; ${s.km_atual} (<b>${s.delta_km} km</b>)</p>
+                    <p class="text-slate-400 font-bold uppercase">Solicitante</p>
+                    <p class="font-extrabold text-slate-800 text-sm">${s.nome_solicitante}</p>
+                    <p class="text-slate-500 text-xs">Origem: ${s.origem_lancamento || 'CAMPO'}</p>
+                    <p class="text-slate-500 text-xs mt-1">KM: ${s.km_ultimo} &rarr; ${s.km_atual} (<b>${s.delta_km} km</b>)</p>
                 </div>
                 <div>
                     <p class="text-slate-400 font-bold uppercase">Validação ADM</p>
-                    <p class="font-bold text-slate-800">${s.adm_aprovador_nome || 'Pendente'}</p>
-                    <p class="text-slate-600">Motivo: <b>${s.motivo_recarga || '-'}</b></p>
-                    <p class="text-emerald-700 font-extrabold">Valor: R$ ${s.saldo_solicitado || '-'}</p>
-                    ${s.justificativa_km ? `<p class="text-red-700 font-bold mt-1">Justif. KM: ${s.justificativa_km}</p>` : ''}
+                    <p class="font-bold text-slate-800 text-xs">${s.adm_aprovador_nome || 'Aguardando'}</p>
+                    <p class="text-slate-600 text-xs truncate" title="${s.motivo_recarga || ''}">Motivo: <b>${s.motivo_recarga || '-'}</b></p>
+                    ${s.justificativa_km ? `<p class="text-red-700 font-bold mt-1 text-[10px] leading-tight">Justif: ${s.justificativa_km}</p>` : ''}
                 </div>
                 <div>
-                    <p class="text-slate-400 font-bold uppercase">Aprovação Coord. / Recarga</p>
-                    <p class="font-bold text-slate-800">Coord: ${s.gestor_aprovador_nome || 'Pendente'}</p>
-                    <p class="font-bold text-slate-800">Vale Card: ${s.recarga_aprovador_nome || 'Pendente'}</p>
-                    ${s.motivo_pendencia_recusa ? `<p class="text-amber-800 font-bold mt-1">Obs/Pendência: ${s.motivo_pendencia_recusa}</p>` : ''}
+                    <p class="text-slate-400 font-bold uppercase">Aprovações Finais</p>
+                    <p class="font-bold text-slate-800 text-xs">Coord: ${s.gestor_aprovador_nome || '-'}</p>
+                    <p class="font-bold text-slate-800 text-xs">Master: ${s.recarga_aprovador_nome || '-'}</p>
+                    ${s.motivo_pendencia_recusa ? `<p class="text-amber-800 font-bold mt-1 text-[10px] leading-tight">Obs: ${s.motivo_pendencia_recusa}</p>` : ''}
                 </div>
             `;
 
-            // Fotos
             const fotos = [
-                { titulo: '1. Painel (KM)', url: s.foto_painel },
-                { titulo: '2. Mapa de Bordo', url: s.foto_mapa },
-                { titulo: '3. Cartão Vale Card', url: s.foto_cartao },
-                { titulo: '4. Carro Adesivado', url: s.foto_carro }
+                { t: '1. Painel (KM)', u: s.foto_painel }, { t: '2. Mapa de Bordo', u: s.foto_mapa },
+                { t: '3. Cartão Vale Card', u: s.foto_cartao }, { t: '4. Carro Adesivado', u: s.foto_carro }
             ];
             document.getElementById('modalGaleriaFotos').innerHTML = fotos.map(f => `
-                <a href="${f.url}" target="_blank" class="block border border-slate-200 rounded-xl overflow-hidden bg-slate-100 hover:ring-2 hover:ring-blue-600 transition">
-                    <img src="${f.url}" alt="${f.titulo}" class="w-full h-32 object-cover">
-                    <div class="p-2 text-center text-xs font-bold text-slate-700 bg-white">${f.titulo} 🔍</div>
+                <a href="${f.u}" target="_blank" class="block border border-slate-200 rounded-xl overflow-hidden bg-slate-100 hover:ring-2 hover:ring-blue-600 transition group relative">
+                    <img src="${f.u}" alt="${f.t}" class="w-full h-32 object-cover group-hover:opacity-75 transition">
+                    <div class="absolute inset-x-0 bottom-0 p-2 text-center text-[10px] font-bold text-slate-800 bg-white/90 backdrop-blur">${f.t}</div>
                 </a>
             `).join('');
 
-            // Controle de Alerta KM (< 260)
             const kmBaixo = s.delta_km < 260;
             document.getElementById('modalAlertaKm').classList.toggle('hidden', !kmBaixo);
             document.getElementById('divJustificativaKm').classList.toggle('hidden', !kmBaixo);
 
-            // Preenche inputs com valores existentes
             document.getElementById('inputMotivoRecarga').value = s.motivo_recarga || '';
             document.getElementById('inputSaldoSolicitado').value = s.saldo_solicitado || '';
             document.getElementById('inputJustificativaKm').value = s.justificativa_km || '';
             document.getElementById('inputMotivoPendenciaRecusa').value = s.motivo_pendencia_recusa || '';
 
-            // Define quem pode editar os campos de ADM (ADM ou Coordenador em Bypass ou Master)
+            // Configuração dos botões e permissões do Modal
             const blocoAdm = document.getElementById('blocoCamposAdm');
             const botoes = document.getElementById('modalBotoesAcao');
             botoes.innerHTML = '';
+            
+            // Só exibe os campos de edição se for ADM/Coord(Bypass) operando em Nova/Pendente, ou se já tiverem sido preenchidos
+            if (s.motivo_recarga || s.status === 'NOVA' || s.status === 'PENDENTE') blocoAdm.classList.remove('hidden');
+            else blocoAdm.classList.add('hidden');
 
             const role = usuarioLogado.role;
 
-            // Lógica de botões para ADM
             if (role === 'ADM' && (s.status === 'NOVA' || s.status === 'PENDENTE')) {
-                blocoAdm.classList.remove('hidden');
                 botoes.innerHTML = `
-                    <button onclick="executarAcao('RECUSADA')" class="bg-red-600 hover:bg-red-700 text-white px-4 py-2.5 rounded-lg text-xs font-extrabold">❌ Recusar Solicitação</button>
-                    <button onclick="executarAcao('PENDENTE')" class="bg-amber-500 hover:bg-amber-600 text-white px-4 py-2.5 rounded-lg text-xs font-extrabold">⚠️ Marcar Pendente</button>
-                    <button onclick="executarAcao('AGUARDANDO_GESTAO')" class="bg-blue-800 hover:bg-blue-900 text-white px-5 py-2.5 rounded-lg text-xs font-extrabold shadow-lg">✅ Aprovar e Enviar p/ Coordenação &rarr;</button>
+                    <button onclick="executar('RECUSADA')" class="bg-red-600 hover:bg-red-700 text-white px-4 py-2.5 rounded-lg text-xs font-bold">❌ Recusar</button>
+                    <button onclick="executar('PENDENTE')" class="bg-amber-500 hover:bg-amber-600 text-white px-4 py-2.5 rounded-lg text-xs font-bold">⚠️ Pendenciar</button>
+                    <button onclick="executar('AGUARDANDO_GESTAO')" class="bg-blue-800 hover:bg-blue-900 text-white px-5 py-2.5 rounded-lg text-xs font-bold shadow-lg">✅ Enviar p/ Coordenação &rarr;</button>
                 `;
             }
-            // Lógica para GESTÃO DE CAMPO (Coordenador: aprova AGUARDANDO_GESTAO ou faz Bypass em NOVA/PENDENTE)
             else if (role === 'GESTAO_CAMPO') {
-                blocoAdm.classList.remove('hidden');
-                botoes.innerHTML = `
-                    <button onclick="executarAcao('RECUSADA')" class="bg-red-600 hover:bg-red-700 text-white px-4 py-2.5 rounded-lg text-xs font-extrabold">❌ Recusar</button>
-                    <button onclick="executarAcao('PENDENTE')" class="bg-amber-500 hover:bg-amber-600 text-white px-4 py-2.5 rounded-lg text-xs font-extrabold">⚠️ Devolver p/ Pendente</button>
-                    <button onclick="executarAcao('AGUARDANDO_RECARGA')" class="bg-orange-600 hover:bg-orange-700 text-white px-5 py-2.5 rounded-lg text-xs font-extrabold shadow-lg">
-                        ✅ ${s.status === 'NOVA' ? 'Validar (Bypass ADM) e Enviar p/ Recarga' : 'Aprovação Final Coordenação'} &rarr;
-                    </button>
-                `;
+                if (modoBypassAtivo && (s.status === 'NOVA' || s.status === 'PENDENTE')) {
+                    botoes.innerHTML = `
+                        <button onclick="executar('RECUSADA')" class="bg-red-600 hover:bg-red-700 text-white px-4 py-2.5 rounded-lg text-xs font-bold">❌ Recusar</button>
+                        <button onclick="executar('PENDENTE')" class="bg-amber-500 hover:bg-amber-600 text-white px-4 py-2.5 rounded-lg text-xs font-bold">⚠️ Pendenciar</button>
+                        <button onclick="executar('AGUARDANDO_RECARGA')" class="bg-orange-600 hover:bg-orange-700 text-white px-5 py-2.5 rounded-lg text-xs font-bold shadow-lg">✅ Validar Bypass (Enviar p/ Master) &rarr;</button>
+                    `;
+                } else if (s.status === 'AGUARDANDO_GESTAO') {
+                    botoes.innerHTML = `
+                        <button onclick="executar('RECUSADA')" class="bg-red-600 hover:bg-red-700 text-white px-4 py-2.5 rounded-lg text-xs font-bold">❌ Recusar</button>
+                        <button onclick="executar('PENDENTE')" class="bg-amber-500 hover:bg-amber-600 text-white px-4 py-2.5 rounded-lg text-xs font-bold">⚠️ Devolver (Pendente)</button>
+                        <button onclick="executar('AGUARDANDO_RECARGA')" class="bg-orange-600 hover:bg-orange-700 text-white px-5 py-2.5 rounded-lg text-xs font-bold shadow-lg">✅ Aprovar Coordenação &rarr;</button>
+                    `;
+                    // Desabilita os campos ADM para o coordenador não apagar sem querer ao aprovar
+                    document.getElementById('inputMotivoRecarga').readOnly = true;
+                    document.getElementById('inputSaldoSolicitado').readOnly = true;
+                    document.getElementById('inputJustificativaKm').readOnly = true;
+                }
             }
-            // Lógica para GESTÃO DE RECARGA (MASTER)
-            else if (role === 'MASTER') {
-                blocoAdm.classList.remove('hidden');
+            else if (role === 'MASTER' && s.status === 'AGUARDANDO_RECARGA') {
                 botoes.innerHTML = `
-                    <button onclick="executarAcao('RECUSADA')" class="bg-red-600 hover:bg-red-700 text-white px-4 py-2.5 rounded-lg text-xs font-extrabold">❌ Cancelar / Recusar</button>
-                    <button onclick="executarAcao('PENDENTE')" class="bg-amber-500 hover:bg-amber-600 text-white px-4 py-2.5 rounded-lg text-xs font-extrabold">⚠️ Sinalizar Pendência ao ADM</button>
-                    <button onclick="executarAcao('RECARGA_REALIZADA')" class="bg-emerald-600 hover:bg-emerald-700 text-white px-6 py-2.5 rounded-lg text-xs font-extrabold shadow-lg">💳 Confirmar Recarga Realizada (Vale Card)</button>
+                    <button onclick="executar('RECUSADA')" class="bg-red-600 hover:bg-red-700 text-white px-4 py-2.5 rounded-lg text-xs font-bold">❌ Cancelar Recarga</button>
+                    <button onclick="executar('PENDENTE')" class="bg-amber-500 hover:bg-amber-600 text-white px-4 py-2.5 rounded-lg text-xs font-bold">⚠️ Devolver com Pendência</button>
+                    <button onclick="executar('RECARGA_REALIZADA')" class="bg-emerald-600 hover:bg-emerald-700 text-white px-6 py-2.5 rounded-lg text-xs font-bold shadow-lg">💳 Confirmar Baixa (Vale Card)</button>
                 `;
             } else {
-                blocoAdm.classList.add('hidden');
-                botoes.innerHTML = `<span class="text-xs text-slate-400 font-bold">Solicitação em etapa atribuída a outro perfil (${s.status}).</span>`;
+                botoes.innerHTML = `<span class="text-xs text-slate-400 font-bold uppercase tracking-wider bg-slate-100 px-4 py-2 rounded">Visualização (Sem permissão de edição nesta fase)</span>`;
             }
         };
 
         window.fecharModal = function() {
             document.getElementById('modalAnalise').classList.add('hidden');
             solicitacaoAberta = null;
+            // Libera readonly dos campos caso o coordenador tenha bloqueado
+            document.getElementById('inputMotivoRecarga').readOnly = false;
+            document.getElementById('inputSaldoSolicitado').readOnly = false;
+            document.getElementById('inputJustificativaKm').readOnly = false;
         };
 
-        window.executarAcao = async function(novoStatus) {
+        window.executar = async function(novoStatus) {
             if (!solicitacaoAberta) return;
 
-            const motivoRecarga = document.getElementById('inputMotivoRecarga').value.trim();
+            const mRec = document.getElementById('inputMotivoRecarga').value.trim();
             const saldo = parseFloat(document.getElementById('inputSaldoSolicitado').value);
-            const justifKm = document.getElementById('inputJustificativaKm').value.trim();
-            const motivoPendRec = document.getElementById('inputMotivoPendenciaRecusa').value.trim();
+            const justKm = document.getElementById('inputJustificativaKm').value.trim();
+            const mPend = document.getElementById('inputMotivoPendenciaRecusa').value.trim();
 
-            // Validações obrigatórias se estiver aprovando
-            if (novoStatus === 'AGUARDANDO_GESTAO' || novoStatus === 'AGUARDANDO_RECARGA' || novoStatus === 'RECARGA_REALIZADA') {
-                if (!motivoRecarga || isNaN(saldo) || saldo <= 0) {
-                    alert('⚠️ Preencha obrigatoriamente o Motivo da Recarga e o Saldo Solicitado (R$)!');
-                    return;
-                }
-                if (solicitacaoAberta.delta_km < 260 && !justifKm) {
-                    alert('🚨 BLOQUEADO: O veículo rodou menos de 260 KM! Preencha obrigatoriamente a Justificativa de Exceção de KM.');
-                    return;
-                }
+            if (['AGUARDANDO_GESTAO', 'AGUARDANDO_RECARGA', 'RECARGA_REALIZADA'].includes(novoStatus)) {
+                if (!mRec || isNaN(saldo) || saldo <= 0) { alert('⚠️ Preencha Motivo e Saldo!'); return; }
+                if (solicitacaoAberta.delta_km < 260 && !justKm) { alert('🚨 A Justificativa de Exceção KM é obrigatória!'); return; }
             }
 
-            // Validação obrigatória se for Pendente ou Recusada
-            if ((novoStatus === 'PENDENTE' || novoStatus === 'RECUSADA') && !motivoPendRec) {
-                alert('⚠️ Informe o motivo da Pendência ou Recusa para que o ADM e o Campo sejam notificados no painel!');
-                return;
+            if (['PENDENTE', 'RECUSADA'].includes(novoStatus) && !mPend) {
+                alert('⚠️ Descreva o motivo da recusa ou pendência!'); return;
             }
 
-            const atualizacao = {
+            const up = {
                 status: novoStatus,
-                motivo_recarga: motivoRecarga || solicitacaoAberta.motivo_recarga,
+                motivo_recarga: mRec || solicitacaoAberta.motivo_recarga,
                 saldo_solicitado: !isNaN(saldo) ? saldo : solicitacaoAberta.saldo_solicitado,
-                justificativa_km: justifKm || solicitacaoAberta.justificativa_km,
-                motivo_pendencia_recusa: motivoPendRec
+                justificativa_km: justKm || solicitacaoAberta.justificativa_km,
+                motivo_pendencia_recusa: mPend
             };
 
             if (novoStatus === 'AGUARDANDO_GESTAO') {
-                atualizacao.adm_aprovador_id = usuarioLogado.id;
-                atualizacao.adm_aprovador_nome = usuarioLogado.nome;
-                atualizacao.adm_data_aprovacao = new Date().toISOString();
+                up.adm_aprovador_id = usuarioLogado.id; up.adm_aprovador_nome = usuarioLogado.nome; up.adm_data_aprovacao = new Date().toISOString();
             }
             if (novoStatus === 'AGUARDANDO_RECARGA') {
-                // Se foi Bypass de ADM pelo Coordenador, registra também como validador ADM
-                if (!solicitacaoAberta.adm_aprovador_id) {
-                    atualizacao.adm_aprovador_id = usuarioLogado.id;
-                    atualizacao.adm_aprovador_nome = `${usuarioLogado.nome} (Bypass Coord.)`;
-                    atualizacao.adm_data_aprovacao = new Date().toISOString();
+                if (!solicitacaoAberta.adm_aprovador_id) { // Se Bypass
+                    up.adm_aprovador_id = usuarioLogado.id; up.adm_aprovador_nome = `${usuarioLogado.nome} (Bypass)`; up.adm_data_aprovacao = new Date().toISOString();
                 }
-                atualizacao.gestor_aprovador_id = usuarioLogado.id;
-                atualizacao.gestor_aprovador_nome = usuarioLogado.nome;
-                atualizacao.gestor_data_aprovacao = new Date().toISOString();
+                up.gestor_aprovador_id = usuarioLogado.id; up.gestor_aprovador_nome = usuarioLogado.nome; up.gestor_data_aprovacao = new Date().toISOString();
             }
             if (novoStatus === 'RECARGA_REALIZADA') {
-                atualizacao.recarga_aprovador_id = usuarioLogado.id;
-                atualizacao.recarga_aprovador_nome = usuarioLogado.nome;
-                atualizacao.recarga_data_baixa = new Date().toISOString();
+                up.recarga_aprovador_id = usuarioLogado.id; up.recarga_aprovador_nome = usuarioLogado.nome; up.recarga_data_baixa = new Date().toISOString();
             }
 
-            const { error } = await supabaseClient
-                .from('solicitacoes_recarga')
-                .update(atualizacao)
-                .eq('id', solicitacaoAberta.id);
-
-            if (error) {
-                alert('Erro ao salvar tratativa: ' + error.message);
-            } else {
-                fecharModal();
-                await carregarSolicitacoes();
-            }
+            const { error } = await supabaseClient.from('solicitacoes_recarga').update(up).eq('id', solicitacaoAberta.id);
+            if (error) alert('Erro: ' + error.message); else { fecharModal(); await carregarSolicitacoes(); }
         };
 
         iniciar();
