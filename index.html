@@ -250,6 +250,7 @@
                 const { error } = await supabaseClient.from('solicitacoes_recarga').insert([{
                     projeto: document.getElementById('projeto').value,
                     matricula: matriculaDigitada,
+                    matricula_solicitante: matriculaDigitada,
                     nome_solicitante: document.getElementById('nome_solicitante').value.trim().toUpperCase(),
                     placa: document.getElementById('placa').value.trim().toUpperCase(),
                     km_ultimo: kmUltimo,
