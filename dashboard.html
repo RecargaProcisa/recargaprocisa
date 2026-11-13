@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <title>Dashboard Analítico - PROCISA</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="config.js"></script>
+</head>
+<body class="bg-slate-50 min-h-screen text-slate-800">
+    <header class="bg-blue-900 text-white px-6 py-4 shadow-lg flex justify-between">
+        <h1 class="text-xl font-black">PROCISA - Dashboard de Recargas</h1>
+        <a href="painel.html" class="bg-slate-700 px-4 py-2 rounded font-bold text-xs">&larr; Voltar ao Painel</a>
+    </header>
+
+    <main class="p-6 max-w-7xl mx-auto">
+        
+        <div class="bg-white p-4 rounded-xl shadow-sm border mb-6 flex gap-4 items-center">
+            <input type="text" id="filtroMat" placeholder="🔍 Filtrar por Matrícula..." class="px-4 py-2 border rounded-lg font-bold w-72 uppercase">
+            <button onclick="gerarIndicadores()" class="bg-blue-800 text-white px-6 py-2 rounded-lg font-bold">Buscar Métricas</button>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+            <div class="bg-white p-6 rounded-2xl shadow border-l-8 border-blue-500">
+                <p class="text-sm font-bold text-slate-400 uppercase">Total Solicitações</p>
+                <h2 id="indQtd" class="text-4xl font-black text-slate-800 mt-2">0</h2>
+            </div>
+            <div class="bg-white p-6 rounded-2xl shadow border-l-8 border-emerald-500">
+                <p class="text-sm font-bold text-slate-400 uppercase">Valor Total Aprovado (R$)</p>
+                <h2 id="indValor" class="text-4xl font-black text-emerald-700 mt-2">R$ 0,00</h2>
+            </div>
+            <div class="bg-white p-6 rounded-2xl shadow border-l-8 border-orange-500">
+                <p class="text-sm font-bold text-slate-400 uppercase">KM Total Rodado</p>
+                <h2 id="indKm" class="text-4xl font-black text-orange-600 mt-2">0 km</h2>
+            </div>
+        </div>
+
+        <div class="bg-white p-6 rounded-2xl shadow border">
+            <h3 class="font-bold text-slate-700 border-b pb-2 mb-4">Extrato Detalhado</h3>
+            <table class="w-full text-left text-sm">
+                <thead><tr class="text-slate-400"><th class="p-2">Data</th><th class="p-2">Matrícula</th><th class="p-2">Placa</th><th class="p-2">KM Rodado</th><th class="p-2">Valor</th></tr></thead>
+                <tbody id="tabelaDash" class="font-semibold text-slate-700 divide-y"></tbody>
+            </table>
+        </div>
+    </main>
+
+    <script>
+        async function gerarIndicadores() {
+            const mat = document.getElementById('filtroMat').value.trim();
+            let query = supabaseClient.from('solicitacoes_recarga').select('criado_em, matricula, placa, delta_km, saldo_solicitado').eq('status', 'RECARGA_REALIZADA');
+            if (mat) query = query.eq('matricula', mat);
+
+            const { data } = await query;
+            if(!data) return;
+
+            let totalValor = 0; let totalKm = 0;
+            const linhas = data.map(d => {
+                totalValor += (d.saldo_solicitado || 0);
+                totalKm += (d.delta_km || 0);
+                return `<tr><td class="p-3">${new Date(d.criado_em).toLocaleDateString()}</td><td class="p-3">${d.matricula}</td><td class="p-3">${d.placa}</td><td class="p-3 text-orange-600">${d.delta_km} km</td><td class="p-3 text-emerald-600">R$ ${d.saldo_solicitado || 0}</td></tr>`;
+            }).join('');
+
+            document.getElementById('indQtd').innerText = data.length;
+            document.getElementById('indValor').innerText = `R$ ${totalValor.toFixed(2)}`;
+            document.getElementById('indKm').innerText = `${totalKm} km`;
+            document.getElementById('tabelaDash').innerHTML = linhas;
+        }
+        gerarIndicadores();
+    </script>
+</body>
+</html>
