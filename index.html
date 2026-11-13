@@ -353,3 +353,16 @@
     </script>
 </body>
 </html>
+// AUTO-PREENCHIMENTO DO NOME VIA MATRÍCULA
+        document.getElementById('matricula').addEventListener('blur', async (e) => {
+            const mat = e.target.value.trim();
+            if (mat) {
+                const { data } = await supabaseClient.from('base_colaboradores').select('nome').eq('matricula', mat).single();
+                if (data) {
+                    const campoNome = document.getElementById('nome_solicitante');
+                    campoNome.value = data.nome;
+                    campoNome.classList.add('bg-emerald-50', 'border-emerald-400');
+                    setTimeout(() => campoNome.classList.remove('bg-emerald-50', 'border-emerald-400'), 2000);
+                }
+            }
+        });
