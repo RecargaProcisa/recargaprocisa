@@ -8,71 +8,118 @@
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="config.js"></script>
 </head>
-<body class="bg-slate-50 min-h-screen text-slate-800">
+<body class="bg-slate-100 min-h-screen text-slate-800">
 
-    <header class="bg-blue-900 text-white p-4 shadow-md flex justify-between items-center">
-        <div class="font-bold text-lg tracking-wide">
-            PROCISA <span class="font-normal text-xs bg-purple-600 px-2 py-1 rounded ml-2 text-purple-100">Gestão de Perfis</span>
-        </div>
-        <div class="flex gap-4">
-            <a href="painel.html" class="text-sm bg-slate-700 hover:bg-slate-600 px-3 py-1.5 rounded border border-slate-500 transition">&larr; Voltar ao Painel</a>
+    <!-- Faixa Azul Padronizada -->
+    <header class="bg-blue-900 text-white px-6 py-4 shadow-lg border-b-4 border-blue-700">
+        <div class="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-3 items-center gap-4">
+            <div class="flex items-center gap-3 justify-center md:justify-start">
+                <span class="font-black text-xl tracking-wider text-blue-100">PROCISA</span>
+                <span class="text-xs bg-purple-600 px-3 py-1 rounded-full text-white font-bold uppercase">Gestão de Perfis</span>
+            </div>
+            <div class="text-center">
+                <h1 class="text-2xl font-extrabold tracking-widest uppercase text-white">GESTÃO DE RECARGAS</h1>
+                <p class="text-xs text-blue-200 font-medium tracking-wide mt-0.5">Gestor Luis Manuel Luviano Saldana</p>
+            </div>
+            <div class="flex justify-center md:justify-end">
+                <a href="painel.html" class="text-xs bg-slate-700 hover:bg-slate-600 px-4 py-2 rounded border border-slate-500 transition font-bold">
+                    &larr; Voltar ao Painel
+                </a>
+            </div>
         </div>
     </header>
 
-    <main class="p-6 max-w-7xl mx-auto mt-4 grid grid-cols-1 lg:grid-cols-3 gap-8">
-        <div class="bg-white p-6 rounded-xl shadow border border-slate-200 lg:col-span-1 h-fit">
-            <h2 class="text-xl font-bold text-blue-900 mb-4">Novo Perfil</h2>
-            <form id="formPerfil" class="space-y-5">
+    <main class="p-6 max-w-7xl mx-auto mt-4 grid grid-cols-1 lg:grid-cols-12 gap-8">
+        
+        <!-- Formulário de Cadastro (4 colunas) -->
+        <div class="bg-white p-6 rounded-2xl shadow-lg border border-slate-200 lg:col-span-4 h-fit">
+            <h2 class="text-xl font-extrabold text-blue-900 mb-4 border-b pb-2">Cadastrar / Atualizar Usuário</h2>
+            
+            <form id="formPerfil" class="space-y-4">
                 <div>
-                    <label class="block text-sm font-semibold text-slate-700 mb-1">Nome Completo *</label>
-                    <input type="text" id="nome" required placeholder="Nome do colaborador" class="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-purple-600 focus:outline-none">
-                </div>
-                <div class="grid grid-cols-2 gap-3">
-                    <div>
-                        <label class="block text-sm font-semibold text-slate-700 mb-1">Matrícula *</label>
-                        <input type="text" id="matricula" required placeholder="Ex: 12345" class="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-purple-600 focus:outline-none">
-                    </div>
-                    <div>
-                        <label class="block text-sm font-semibold text-slate-700 mb-1">Senha Inicial *</label>
-                        <input type="password" id="senha" required placeholder="••••••••" class="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-purple-600 focus:outline-none">
-                    </div>
-                </div>
-                <div>
-                    <label class="block text-sm font-semibold text-slate-700 mb-1">Nível de Acesso *</label>
-                    <select id="role" required class="w-full px-3 py-2 border border-slate-300 rounded-lg bg-white focus:ring-2 focus:ring-purple-600 focus:outline-none">
-                        <option value="ADM">Administrativo (ADM)</option>
-                        <option value="GESTAO_CAMPO">Gestão de Campo (Coordenador)</option>
-                        <option value="MASTER">Master (Gestão de Recarga)</option>
-                    </select>
-                </div>
-                <div>
-                    <label class="block text-sm font-semibold text-slate-700 mb-1">Projeto *</label>
-                    <input type="text" id="projeto" required list="listaProjetos" placeholder="Digite para criar ou selecione..." class="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-purple-600 focus:outline-none uppercase">
-                    <datalist id="listaProjetos"></datalist>
+                    <label class="block text-sm font-bold text-slate-700 mb-1">Nome Completo *</label>
+                    <input type="text" id="nome" required placeholder="Ex: VANESSA DAMASSENA"
+                        class="w-full px-3 py-2.5 border border-slate-300 rounded-lg focus:ring-2 focus:ring-purple-600 focus:outline-none uppercase">
                 </div>
 
-                <button type="submit" id="btnSalvar" class="w-full bg-purple-700 hover:bg-purple-800 text-white font-bold py-3 rounded-lg transition shadow-md mt-4 text-lg">
-                    Criar Perfil
+                <div class="grid grid-cols-2 gap-3">
+                    <div>
+                        <label class="block text-sm font-bold text-slate-700 mb-1">Matrícula *</label>
+                        <input type="text" id="matricula" required placeholder="Ex: 150311"
+                            class="w-full px-3 py-2.5 border border-slate-300 rounded-lg focus:ring-2 focus:ring-purple-600 focus:outline-none font-bold">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-bold text-slate-700 mb-1">Senha Inicial *</label>
+                        <input type="password" id="senha" required placeholder="Mín. 6 dígitos"
+                            class="w-full px-3 py-2.5 border border-slate-300 rounded-lg focus:ring-2 focus:ring-purple-600 focus:outline-none">
+                    </div>
+                </div>
+
+                <div>
+                    <label class="block text-sm font-bold text-slate-700 mb-1">Nível de Acesso (Grupo) *</label>
+                    <select id="role" required class="w-full px-3 py-2.5 border border-slate-300 rounded-lg bg-white focus:ring-2 focus:ring-purple-600 font-semibold">
+                        <option value="ADM">ADM (Validação Primária)</option>
+                        <option value="GESTAO_CAMPO">GESTÃO DE CAMPO (Coordenador)</option>
+                        <option value="MASTER">GESTÃO DE RECARGA (Master)</option>
+                    </select>
+                </div>
+
+                <!-- BLOCO SUSPENSO MULTI-SELEÇÃO DE PROJETOS -->
+                <div class="relative">
+                    <label class="block text-sm font-bold text-slate-700 mb-1">Projetos Vinculados (Marque 1 ou mais) *</label>
+                    
+                    <button type="button" id="btnDropdownProjetos" onclick="toggleDropdownProjetos()"
+                        class="w-full px-3 py-2.5 border border-slate-300 rounded-lg bg-white text-left flex justify-between items-center focus:ring-2 focus:ring-purple-600">
+                        <span id="textoProjetosSelecionados" class="text-sm text-slate-600 truncate font-medium">Selecione os projetos...</span>
+                        <span class="text-slate-400 text-xs">▼</span>
+                    </button>
+
+                    <!-- Menu Suspenso com Checkboxes -->
+                    <div id="menuDropdownProjetos" class="hidden absolute z-30 mt-1 w-full bg-white border border-slate-300 rounded-xl shadow-2xl p-3 max-h-64 overflow-y-auto">
+                        <!-- Adicionar novo projeto na hora -->
+                        <div id="areaNovoProjeto" class="flex gap-1.5 mb-3 pb-2 border-b border-slate-200">
+                            <input type="text" id="inputNovoProjeto" placeholder="Novo projeto (Ex: CLARO RJ)"
+                                class="w-full px-2.5 py-1.5 text-xs border border-slate-300 rounded uppercase focus:outline-none focus:border-purple-600">
+                            <button type="button" onclick="adicionarProjetoNaLista()"
+                                class="bg-purple-700 hover:bg-purple-800 text-white px-3 py-1.5 rounded text-xs font-bold shrink-0">
+                                + Criar
+                            </button>
+                        </div>
+
+                        <div id="listaCheckboxesProjetos" class="space-y-1.5 text-sm">
+                            <!-- Preenchido via JS -->
+                        </div>
+                    </div>
+                </div>
+
+                <button type="submit" id="btnSalvar" 
+                    class="w-full bg-purple-700 hover:bg-purple-800 text-white font-extrabold py-3 rounded-lg transition shadow-md mt-4">
+                    Salvar Usuário
                 </button>
-                <div id="msgFeedback" class="mt-3 p-3 rounded text-sm hidden"></div>
+                <div id="msgFeedback" class="mt-3 p-3 rounded-lg text-sm hidden"></div>
             </form>
         </div>
 
-        <div class="bg-white p-6 rounded-xl shadow border border-slate-200 lg:col-span-2 overflow-hidden flex flex-col">
-            <h2 class="text-xl font-bold text-blue-900 mb-4">Perfis Cadastrados</h2>
-            <div class="overflow-x-auto flex-grow rounded-lg border border-slate-200">
+        <!-- Tabela de Perfis Cadastrados (8 colunas) -->
+        <div class="bg-white p-6 rounded-2xl shadow-lg border border-slate-200 lg:col-span-8 flex flex-col">
+            <div class="flex justify-between items-center mb-4 border-b pb-2">
+                <h2 class="text-xl font-extrabold text-blue-900">Usuários Cadastrados</h2>
+                <span class="text-xs text-slate-500">Dica: Se digitar uma matrícula já existente, o sistema atualiza os projetos e senha.</span>
+            </div>
+
+            <div class="overflow-x-auto flex-grow rounded-xl border border-slate-200">
                 <table class="w-full text-left border-collapse">
                     <thead>
-                        <tr class="bg-slate-100 border-b border-slate-200 text-slate-600 text-sm">
-                            <th class="p-4 font-bold">Matrícula</th>
-                            <th class="p-4 font-bold">Nome</th>
-                            <th class="p-4 font-bold">Perfil</th>
-                            <th class="p-4 font-bold">Projeto</th>
-                            <th class="p-4 text-center font-bold">Ações (Master)</th>
+                        <tr class="bg-slate-100 border-b border-slate-200 text-slate-700 text-xs uppercase">
+                            <th class="p-3.5 font-extrabold">Matrícula</th>
+                            <th class="p-3.5 font-extrabold">Nome</th>
+                            <th class="p-3.5 font-extrabold">Grupo</th>
+                            <th class="p-3.5 font-extrabold">Projetos Vinculados</th>
+                            <th class="p-3.5 text-center font-extrabold">Ações</th>
                         </tr>
                     </thead>
-                    <tbody id="tabelaPerfis" class="text-sm">
-                        <tr><td colspan="5" class="p-6 text-center text-slate-500 text-lg">Carregando utilizadores...</td></tr>
+                    <tbody id="tabelaPerfis" class="text-sm divide-y divide-slate-200">
+                        <tr><td colspan="5" class="p-6 text-center text-slate-500">Carregando usuários...</td></tr>
                     </tbody>
                 </table>
             </div>
@@ -81,65 +128,147 @@
 
     <script>
         let usuarioAtual = null;
+        let todosProjetosBanco = [];
+
+        function toggleDropdownProjetos() {
+            const menu = document.getElementById('menuDropdownProjetos');
+            menu.classList.toggle('hidden');
+        }
+
+        // Fecha o dropdown se clicar fora
+        document.addEventListener('click', (e) => {
+            const btn = document.getElementById('btnDropdownProjetos');
+            const menu = document.getElementById('menuDropdownProjetos');
+            if (!btn.contains(e.target) && !menu.contains(e.target)) {
+                menu.classList.add('hidden');
+            }
+        });
+
+        function atualizarTextoProjetos() {
+            const selecionados = Array.from(document.querySelectorAll('.chk-projeto:checked')).map(cb => cb.value);
+            const span = document.getElementById('textoProjetosSelecionados');
+            if (selecionados.length === 0) {
+                span.innerText = 'Selecione 1 ou mais projetos...';
+                span.className = 'text-sm text-slate-400 truncate';
+            } else {
+                span.innerText = `${selecionados.length} selecionado(s): ${selecionados.join(', ')}`;
+                span.className = 'text-sm text-purple-900 font-bold truncate';
+            }
+        }
+
+        async function adicionarProjetoNaLista() {
+            const input = document.getElementById('inputNovoProjeto');
+            const nomeProj = input.value.trim().toUpperCase();
+            if (!nomeProj) return;
+
+            await supabaseClient.from('projetos').insert([{ nome: nomeProj }]);
+            input.value = '';
+            await carregarProjetos( nomeProj );
+        }
+
+        async function carregarProjetos(marcarAutomatico = null) {
+            const selecionadosAtuais = Array.from(document.querySelectorAll('.chk-projeto:checked')).map(cb => cb.value);
+            if (marcarAutomatico) selecionadosAtuais.push(marcarAutomatico);
+
+            const { data } = await supabaseClient.from('projetos').select('nome').order('nome');
+            todosProjetosBanco = data ? data.map(p => p.nome) : [];
+
+            // Se for Coordenador, restringe aos projetos dele
+            let projetosDisponiveis = todosProjetosBanco;
+            if (usuarioAtual.role === 'GESTAO_CAMPO' && usuarioAtual.projetos && usuarioAtual.projetos.length > 0) {
+                projetosDisponiveis = usuarioAtual.projetos;
+                document.getElementById('areaNovoProjeto').classList.add('hidden');
+            }
+
+            const container = document.getElementById('listaCheckboxesProjetos');
+            if (projetosDisponiveis.length === 0) {
+                container.innerHTML = `<p class="text-xs text-slate-400 p-2">Digite um projeto acima e clique em + Criar.</p>`;
+                return;
+            }
+
+            container.innerHTML = projetosDisponiveis.map(nome => {
+                const checked = selecionadosAtuais.includes(nome) ? 'checked' : '';
+                return `
+                    <label class="flex items-center gap-2.5 p-2 hover:bg-purple-50 rounded cursor-pointer border border-transparent hover:border-purple-200 transition">
+                        <input type="checkbox" value="${nome}" ${checked} onchange="atualizarTextoProjetos()" class="chk-projeto w-4 h-4 text-purple-600 rounded focus:ring-purple-500">
+                        <span class="font-bold text-slate-700 text-xs">${nome}</span>
+                    </label>
+                `;
+            }).join('');
+
+            atualizarTextoProjetos();
+        }
 
         async function checarAcesso() {
             const { data: { user } } = await supabaseClient.auth.getUser();
             if (!user) { window.location.href = 'login.html'; return; }
 
-            const { data: perfil } = await supabaseClient.from('perfis_usuarios').select('perfil, projeto_id').eq('id', user.id).single();
+            const { data: perfil } = await supabaseClient.from('perfis_usuarios').select('*').eq('id', user.id).single();
             if (!perfil || (perfil.perfil !== 'MASTER' && perfil.perfil !== 'GESTAO_CAMPO')) {
                 window.location.href = 'painel.html'; return;
             }
             
-            usuarioAtual = { ...user, role: perfil.perfil, projeto_id: perfil.projeto_id };
+            usuarioAtual = { ...user, role: perfil.perfil, projetos: perfil.projetos || [] };
             
             if (perfil.perfil === 'GESTAO_CAMPO') {
-                document.getElementById('role').innerHTML = '<option value="ADM">Administrativo (ADM)</option>';
-                const { data: projData } = await supabaseClient.from('projetos').select('nome').eq('id', perfil.projeto_id).single();
-                const inputProjeto = document.getElementById('projeto');
-                inputProjeto.value = projData ? projData.nome : 'PROJETO VINCULADO';
-                inputProjeto.readOnly = true;
-                inputProjeto.className = "w-full px-3 py-2 border border-slate-200 rounded-lg bg-slate-100 focus:outline-none uppercase text-slate-500";
+                document.getElementById('role').innerHTML = '<option value="ADM">ADM (Validação Primária)</option>';
             }
-            carregarProjetos();
-            carregarPerfisCadastrados();
-        }
-
-        async function carregarProjetos() {
-            const datalist = document.getElementById('listaProjetos');
-            const { data } = await supabaseClient.from('projetos').select('nome').order('nome');
-            if (data) datalist.innerHTML = data.map(p => `<option value="${p.nome}">`).join('');
+            await carregarProjetos();
+            await carregarPerfisCadastrados();
         }
 
         async function carregarPerfisCadastrados() {
             const tbody = document.getElementById('tabelaPerfis');
-            let query = supabaseClient.from('perfis_usuarios').select(`id, matricula, nome, perfil, ativo, projetos (nome)`).order('nome');
-            if (usuarioAtual.role === 'GESTAO_CAMPO') query = query.eq('projeto_id', usuarioAtual.projeto_id);
-
-            const { data, error } = await query;
+            const { data, error } = await supabaseClient.from('perfis_usuarios').select('*').order('nome');
             
-            if (error) { tbody.innerHTML = `<tr><td colspan="5" class="p-6 text-center text-red-600 font-bold">Erro: ${error.message}</td></tr>`; return; }
-            if (!data || data.length === 0) { tbody.innerHTML = '<tr><td colspan="5" class="p-6 text-center text-slate-500">Nenhum perfil encontrado.</td></tr>'; return; }
+            if (error) {
+                tbody.innerHTML = `<tr><td colspan="5" class="p-6 text-center text-red-600 font-bold">Erro: ${error.message}</td></tr>`;
+                return;
+            }
+            if (!data || data.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="5" class="p-6 text-center text-slate-500">Nenhum perfil encontrado.</td></tr>';
+                return;
+            }
 
-            tbody.innerHTML = data.map(p => `
-                <tr class="border-b border-slate-200 hover:bg-slate-50 transition">
-                    <td class="p-4 font-bold text-slate-700">${p.matricula || '-'}</td>
-                    <td class="p-4 font-medium">${p.nome || '-'}</td>
-                    <td class="p-4"><span class="bg-blue-100 text-blue-800 px-3 py-1 rounded text-xs uppercase font-bold tracking-wide">${p.perfil}</span></td>
-                    <td class="p-4 text-slate-600">${p.projetos ? p.projetos.nome : 'Sem Projeto'}</td>
-                    <td class="p-4 text-center">
-                        ${(usuarioAtual.role === 'MASTER' && p.id !== usuarioAtual.id) 
-                            ? `<div class="flex justify-center gap-2">
-                                <button onclick="resetarSenhaPerfil('${p.id}', '${p.nome}')" class="bg-blue-50 text-blue-700 hover:bg-blue-600 hover:text-white px-3 py-1.5 rounded text-xs font-bold border border-blue-200 transition">Resetar Senha</button>
-                                <button onclick="excluirPerfil('${p.id}', '${p.nome}')" class="bg-red-50 text-red-600 hover:bg-red-600 hover:text-white px-3 py-1.5 rounded text-xs font-bold border border-red-200 transition">Excluir</button>
+            tbody.innerHTML = data.map(p => {
+                const projs = (p.projetos && p.projetos.length > 0)
+                    ? p.projetos.map(pr => `<span class="inline-block bg-purple-100 text-purple-900 px-2 py-0.5 rounded text-xs font-bold mr-1 mb-1 border border-purple-200">${pr}</span>`).join('')
+                    : `<span class="text-slate-400 text-xs italic">Sem restrição / Global</span>`;
+
+                return `
+                <tr class="hover:bg-slate-50 transition">
+                    <td class="p-3.5 font-black text-blue-900">${p.matricula || '-'}</td>
+                    <td class="p-3.5 font-semibold text-slate-800">${p.nome || '-'}</td>
+                    <td class="p-3.5"><span class="bg-blue-100 text-blue-900 px-2.5 py-1 rounded text-xs uppercase font-extrabold">${p.perfil}</span></td>
+                    <td class="p-3.5">${projs}</td>
+                    <td class="p-3.5 text-center">
+                        ${(usuarioAtual.role === 'MASTER') 
+                            ? `<div class="flex justify-center gap-1.5 flex-wrap">
+                                <button onclick='preencherParaEditar(${JSON.stringify(p)})' class="bg-amber-50 text-amber-800 hover:bg-amber-500 hover:text-white px-2.5 py-1 rounded text-xs font-bold border border-amber-300 transition">Editar Projetos</button>
+                                <button onclick="resetarSenhaPerfil('${p.id}', '${p.nome}')" class="bg-blue-50 text-blue-700 hover:bg-blue-600 hover:text-white px-2.5 py-1 rounded text-xs font-bold border border-blue-200 transition">Senha</button>
+                                ${p.id !== usuarioAtual.id ? `<button onclick="excluirPerfil('${p.id}', '${p.nome}')" class="bg-red-50 text-red-600 hover:bg-red-600 hover:text-white px-2.5 py-1 rounded text-xs font-bold border border-red-200 transition">Excluir</button>` : ''}
                                </div>`
-                            : `<span class="text-slate-400 text-sm font-medium">Restrito</span>`}
+                            : `<span class="text-slate-400 text-xs">Visualização</span>`}
                     </td>
                 </tr>
-            `).join('');
+            `}).join('');
         }
 
-        // Função de Resetar Senha
+        // Preenche o formulário à esquerda para editar projetos/perfil rapidamente
+        window.preencherParaEditar = function(perfilObj) {
+            document.getElementById('nome').value = perfilObj.nome || '';
+            document.getElementById('matricula').value = perfilObj.matricula || '';
+            document.getElementById('role').value = perfilObj.perfil || 'ADM';
+            document.getElementById('senha').placeholder = 'Digite a senha atual ou nova';
+            
+            const projsUsuario = perfilObj.projetos || [];
+            document.querySelectorAll('.chk-projeto').forEach(cb => {
+                cb.checked = projsUsuario.includes(cb.value);
+            });
+            atualizarTextoProjetos();
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        };
+
         window.resetarSenhaPerfil = async function(idUser, nomeUser) {
             const novaSenha = prompt(`🔄 Digite a nova senha para ${nomeUser} (Mín. 6 caracteres):`);
             if (!novaSenha) return;
@@ -155,18 +284,15 @@
             }
         };
 
-        // Função de Excluir Perfil
         window.excluirPerfil = async function(idUser, nomeUser) {
-            const confirmacao = confirm(`⚠️ ATENÇÃO: Tem a certeza que deseja excluir PERMANENTEMENTE o utilizador ${nomeUser}?`);
-            if (!confirmacao) return;
-
+            if (!confirm(`⚠️ Deseja excluir PERMANENTEMENTE o usuário ${nomeUser}?`)) return;
             try {
                 const { data, error } = await supabaseClient.rpc('excluir_usuario_admin', { p_user_id: idUser });
                 if (error) throw error;
                 if (data && data.sucesso === false) throw new Error(data.erro);
                 carregarPerfisCadastrados();
             } catch (error) {
-                alert('Erro ao excluir utilizador: ' + error.message);
+                alert('Erro ao excluir: ' + error.message);
             }
         };
 
@@ -174,14 +300,23 @@
             e.preventDefault();
             const btn = document.getElementById('btnSalvar');
             const msg = document.getElementById('msgFeedback');
+            
+            const projetosMarcados = Array.from(document.querySelectorAll('.chk-projeto:checked')).map(cb => cb.value);
+            const roleEscolhida = document.getElementById('role').value;
+
+            if (roleEscolhida !== 'MASTER' && projetosMarcados.length === 0) {
+                alert('Por favor, selecione pelo menos 1 projeto no bloco suspenso!');
+                return;
+            }
+
             btn.disabled = true; btn.innerText = 'Salvando...'; msg.classList.add('hidden');
 
             const payload = {
                 p_nome: document.getElementById('nome').value.trim(),
                 p_matricula: document.getElementById('matricula').value.trim(),
                 p_senha: document.getElementById('senha').value,
-                p_perfil: document.getElementById('role').value,
-                p_projeto: document.getElementById('projeto').value.trim().toUpperCase(),
+                p_perfil: roleEscolhida,
+                p_projetos: projetosMarcados,
                 p_criador_id: usuarioAtual.id
             };
 
@@ -190,16 +325,18 @@
                 if (error) throw error;
                 if (data && data.sucesso === false) throw new Error(data.erro);
 
-                msg.className = 'mt-3 p-4 rounded text-sm font-bold bg-green-100 text-green-800 border border-green-300';
-                msg.innerText = '✅ Perfil criado com sucesso!';
+                msg.className = 'mt-3 p-3 rounded-lg text-sm font-bold bg-green-100 text-green-800 border border-green-300';
+                msg.innerText = '✅ Usuário salvo e liberado para login com sucesso!';
                 document.getElementById('formPerfil').reset();
-                carregarProjetos();
-                carregarPerfisCadastrados();
+                document.querySelectorAll('.chk-projeto').forEach(cb => cb.checked = false);
+                atualizarTextoProjetos();
+                await carregarProjetos();
+                await carregarPerfisCadastrados();
             } catch (error) {
-                msg.className = 'mt-3 p-4 rounded text-sm font-bold bg-red-100 text-red-800 border border-red-300';
-                msg.innerText = "❌ Erro ao criar: " + error.message;
+                msg.className = 'mt-3 p-3 rounded-lg text-sm font-bold bg-red-100 text-red-800 border border-red-300';
+                msg.innerText = "❌ Erro: " + error.message;
             } finally {
-                btn.disabled = false; btn.innerText = 'Criar Perfil'; msg.classList.remove('hidden');
+                btn.disabled = false; btn.innerText = 'Salvar Usuário'; msg.classList.remove('hidden');
             }
         });
 
