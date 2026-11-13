@@ -3,31 +3,38 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Painel de Gestão - PROCISA</title>
+    <title>Painel - Gestão de Recargas PROCISA</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="config.js"></script>
 </head>
 <body class="bg-slate-100 min-h-screen text-slate-800">
 
-    <!-- Navbar Superior -->
-    <header class="bg-blue-900 text-white p-4 shadow-md flex justify-between items-center">
-        <div class="font-bold text-xl tracking-wide flex items-center gap-3">
-            PROCISA <span id="tagPerfil" class="font-normal text-xs bg-blue-700 px-3 py-1.5 rounded text-blue-100 uppercase tracking-widest shadow-inner">Carregando...</span>
-        </div>
-        <div class="flex gap-3">
-            <button onclick="trocarMinhaSenha()" class="text-sm bg-blue-800 hover:bg-blue-700 px-4 py-2 rounded border border-blue-600 transition shadow">
-                Trocar Minha Senha
-            </button>
-            <button onclick="sair()" class="text-sm bg-red-600 hover:bg-red-700 px-4 py-2 rounded border border-red-500 transition shadow">
-                Sair
-            </button>
+    <!-- Faixa Azul Padronizada -->
+    <header class="bg-blue-900 text-white px-6 py-4 shadow-lg border-b-4 border-blue-700">
+        <div class="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-3 items-center gap-4">
+            <div class="flex items-center gap-3 justify-center md:justify-start">
+                <span class="font-black text-xl tracking-wider text-blue-100">PROCISA</span>
+                <span id="tagPerfil" class="text-xs bg-blue-700 px-3 py-1 rounded-full text-blue-100 font-bold uppercase tracking-wider">...</span>
+            </div>
+            <div class="text-center">
+                <h1 class="text-2xl font-extrabold tracking-widest uppercase text-white">GESTÃO DE RECARGAS</h1>
+                <p class="text-xs text-blue-200 font-medium tracking-wide mt-0.5">Gestor Luis Manuel Luviano Saldana</p>
+            </div>
+            <div class="flex gap-2 justify-center md:justify-end">
+                <button onclick="trocarMinhaSenha()" class="text-xs bg-blue-800 hover:bg-blue-700 px-3 py-2 rounded border border-blue-600 transition font-semibold">
+                    🔒 Trocar Senha
+                </button>
+                <button onclick="sair()" class="text-xs bg-red-600 hover:bg-red-700 px-4 py-2 rounded border border-red-500 transition font-bold">
+                    Sair
+                </button>
+            </div>
         </div>
     </header>
 
     <!-- Conteúdo Principal -->
-    <main id="conteudoDinamico" class="p-8 max-w-7xl mx-auto mt-6">
-        <div class="text-center text-slate-500 mt-20 text-lg">Verificando credenciais...</div>
+    <main id="conteudoDinamico" class="p-6 md:p-10 max-w-7xl mx-auto">
+        <div class="text-center text-slate-500 mt-16 text-lg">Carregando permissões do perfil...</div>
     </main>
 
     <script>
@@ -36,88 +43,149 @@
             window.location.href = 'login.html';
         }
 
-        // Função para o próprio usuário alterar a sua senha
         async function trocarMinhaSenha() {
             const novaSenha = prompt("🔒 Digite a sua NOVA senha (mínimo de 6 caracteres):");
             if (!novaSenha) return;
-            if (novaSenha.length < 6) {
-                alert("A senha deve ter pelo menos 6 caracteres."); return;
-            }
+            if (novaSenha.length < 6) { alert("A senha deve ter pelo menos 6 caracteres."); return; }
             
             const { error } = await supabaseClient.auth.updateUser({ password: novaSenha });
-            if (error) {
-                alert("Erro ao atualizar senha: " + error.message);
-            } else {
-                alert("✅ Senha atualizada com sucesso! Use a nova senha no próximo acesso.");
-            }
+            if (error) alert("Erro ao atualizar senha: " + error.message);
+            else alert("✅ Senha alterada com sucesso!");
         }
 
         async function carregarPainel() {
             const { data: { user } } = await supabaseClient.auth.getUser();
             if (!user) { window.location.href = 'login.html'; return; }
 
-            const { data: perfil, error } = await supabaseClient.from('perfis_usuarios').select('perfil').eq('id', user.id).single();
+            const { data: perfil, error } = await supabaseClient
+                .from('perfis_usuarios')
+                .select('*')
+                .eq('id', user.id)
+                .single();
+
             if (error || !perfil) {
-                document.getElementById('conteudoDinamico').innerHTML = `<div class="bg-red-100 p-6 rounded-xl text-red-800 text-center text-lg border border-red-200">Seu utilizador está sem perfil vinculado. Fale com o Master.</div>`; return;
+                document.getElementById('conteudoDinamico').innerHTML = `
+                    <div class="bg-red-100 p-6 rounded-xl text-red-800 text-center font-bold border border-red-300">
+                        Seu usuário não possui perfil configurado. Contate a Gestão de Recarga (Master).
+                    </div>`;
+                return;
             }
 
-            document.getElementById('tagPerfil').innerText = perfil.perfil;
+            const nomeExibicaoPerfil = perfil.perfil === 'MASTER' ? 'GESTÃO DE RECARGA (MASTER)' : 
+                                       perfil.perfil === 'GESTAO_CAMPO' ? 'GESTÃO DE CAMPO (COORD.)' : perfil.perfil;
+            document.getElementById('tagPerfil').innerText = nomeExibicaoPerfil;
+
+            const listaProjetos = (perfil.projetos && perfil.projetos.length > 0) 
+                ? perfil.projetos.map(p => `<span class="bg-blue-100 text-blue-900 px-2.5 py-1 rounded text-xs font-bold">${p}</span>`).join(' ')
+                : `<span class="text-slate-400 text-xs">Todos / Global</span>`;
+
             const main = document.getElementById('conteudoDinamico');
 
+            let cardsHtml = '';
+
             if (perfil.perfil === 'MASTER') {
-                main.innerHTML = `
-                    <h1 class="text-3xl font-bold mb-8 text-blue-900 border-b border-slate-300 pb-2">Painel de Gestão (Master)</h1>
+                cardsHtml = `
                     <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
-                        <a href="todas_solicitacoes.html" class="bg-white p-8 rounded-2xl shadow-lg border-t-8 border-blue-600 block hover:scale-105 hover:shadow-2xl transition-all duration-300 cursor-pointer flex flex-col items-center text-center group min-h-[240px] justify-center">
-                            <div class="bg-blue-100 p-4 rounded-full mb-4 group-hover:bg-blue-600 group-hover:text-white transition-colors duration-300 text-3xl">📥</div>
-                            <h2 class="text-xl font-bold mb-2 text-slate-800">Fila de Solicitações</h2>
-                            <p class="text-slate-500">Acesso global e aprovação de recargas de todos os projetos.</p>
+                        <a href="todas_solicitacoes.html" class="bg-white p-8 rounded-2xl shadow-lg border-t-8 border-blue-600 hover:-translate-y-1 hover:shadow-2xl transition flex flex-col justify-between min-h-[250px]">
+                            <div>
+                                <div class="text-4xl mb-4">💳</div>
+                                <h2 class="text-2xl font-extrabold text-slate-800 mb-2">Painel de Recargas</h2>
+                                <p class="text-sm text-slate-600">Visão consolidada global. Liberação de saldo VALE CARD, auditoria de aprovações, KM e fotos.</p>
+                            </div>
+                            <span class="mt-6 inline-block text-blue-700 font-bold text-sm">Acessar Fila Global &rarr;</span>
                         </a>
-                        <a href="gestao_perfis.html" class="bg-white p-8 rounded-2xl shadow-lg border-t-8 border-purple-600 block hover:scale-105 hover:shadow-2xl transition-all duration-300 cursor-pointer flex flex-col items-center text-center group min-h-[240px] justify-center">
-                            <div class="bg-purple-100 p-4 rounded-full mb-4 group-hover:bg-purple-600 group-hover:text-white transition-colors duration-300 text-3xl">👥</div>
-                            <h2 class="text-xl font-bold mb-2 text-slate-800">Gestão de Perfis</h2>
-                            <p class="text-slate-500">Criar acessos, redefinir senhas, excluir utilizadores.</p>
+
+                        <a href="gestao_perfis.html" class="bg-white p-8 rounded-2xl shadow-lg border-t-8 border-purple-600 hover:-translate-y-1 hover:shadow-2xl transition flex flex-col justify-between min-h-[250px]">
+                            <div>
+                                <div class="text-4xl mb-4">👥</div>
+                                <h2 class="text-2xl font-extrabold text-slate-800 mb-2">Gestão de Perfis</h2>
+                                <p class="text-sm text-slate-600">Cadastrar usuários em múltiplos projetos, redefinir senhas e gerenciar permissões (ADM, Coordenação e Master).</p>
+                            </div>
+                            <span class="mt-6 inline-block text-purple-700 font-bold text-sm">Gerenciar Usuários &rarr;</span>
                         </a>
-                        <a href="cadastros_base.html" class="bg-white p-8 rounded-2xl shadow-lg border-t-8 border-emerald-500 block hover:scale-105 hover:shadow-2xl transition-all duration-300 cursor-pointer flex flex-col items-center text-center group min-h-[240px] justify-center">
-                            <div class="bg-emerald-100 p-4 rounded-full mb-4 group-hover:bg-emerald-500 group-hover:text-white transition-colors duration-300 text-3xl">📊</div>
-                            <h2 class="text-xl font-bold mb-2 text-slate-800">Cadastros Base</h2>
-                            <p class="text-slate-500">Upload e atualização de planilhas e dados de campo.</p>
+
+                        <a href="index.html?modo=manual" class="bg-white p-8 rounded-2xl shadow-lg border-t-8 border-emerald-600 hover:-translate-y-1 hover:shadow-2xl transition flex flex-col justify-between min-h-[250px]">
+                            <div>
+                                <div class="text-4xl mb-4">➕</div>
+                                <h2 class="text-2xl font-extrabold text-slate-800 mb-2">Solicitação Manual</h2>
+                                <p class="text-sm text-slate-600">Lançar uma solicitação de recarga diretamente pela gestão inserindo matrícula do técnico e fotos.</p>
+                            </div>
+                            <span class="mt-6 inline-block text-emerald-700 font-bold text-sm">Abrir Formulário &rarr;</span>
                         </a>
                     </div>
                 `;
             } 
             else if (perfil.perfil === 'GESTAO_CAMPO') {
-                main.innerHTML = `
-                    <h1 class="text-3xl font-bold mb-8 text-blue-900 border-b border-slate-300 pb-2">Painel de Coordenador</h1>
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
-                        <a href="todas_solicitacoes.html" class="bg-white p-8 rounded-2xl shadow-lg border-t-8 border-orange-500 block hover:scale-105 hover:shadow-2xl transition-all duration-300 cursor-pointer flex flex-col items-center text-center group min-h-[240px] justify-center">
-                            <div class="bg-orange-100 p-4 rounded-full mb-4 group-hover:bg-orange-500 group-hover:text-white transition-colors text-3xl">✅</div>
-                            <h2 class="text-xl font-bold mb-2 text-slate-800">Aprovação Final</h2>
-                            <p class="text-slate-500">Validação de recargas pré-aprovadas pelo ADM.</p>
+                cardsHtml = `
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+                        <a href="todas_solicitacoes.html" class="bg-white p-8 rounded-2xl shadow-lg border-t-8 border-orange-500 hover:-translate-y-1 hover:shadow-2xl transition flex flex-col justify-between min-h-[250px]">
+                            <div>
+                                <div class="text-4xl mb-4">✅</div>
+                                <h2 class="text-2xl font-extrabold text-slate-800 mb-2">Aprovação & Bypass ADM</h2>
+                                <p class="text-sm text-slate-600">Aprovação final global (AGUARDANDO GESTÃO) e atuação direta nas solicitações NOVAS dos seus projetos.</p>
+                            </div>
+                            <span class="mt-6 inline-block text-orange-600 font-bold text-sm">Analisar Solicitações &rarr;</span>
                         </a>
-                        <a href="gestao_perfis.html" class="bg-white p-8 rounded-2xl shadow-lg border-t-8 border-slate-600 block hover:scale-105 hover:shadow-2xl transition-all duration-300 cursor-pointer flex flex-col items-center text-center group min-h-[240px] justify-center">
-                            <div class="bg-slate-100 p-4 rounded-full mb-4 group-hover:bg-slate-600 group-hover:text-white transition-colors text-3xl">👤</div>
-                            <h2 class="text-xl font-bold mb-2 text-slate-800">Meus ADMs</h2>
-                            <p class="text-slate-500">Gerir a sua equipa administrativa e acessos.</p>
+
+                        <a href="gestao_perfis.html" class="bg-white p-8 rounded-2xl shadow-lg border-t-8 border-purple-600 hover:-translate-y-1 hover:shadow-2xl transition flex flex-col justify-between min-h-[250px]">
+                            <div>
+                                <div class="text-4xl mb-4">👤</div>
+                                <h2 class="text-2xl font-extrabold text-slate-800 mb-2">Minha Equipe ADM</h2>
+                                <p class="text-sm text-slate-600">Visualizar e cadastrar usuários administrativos vinculados aos seus projetos.</p>
+                            </div>
+                            <span class="mt-6 inline-block text-purple-700 font-bold text-sm">Gerenciar ADMs &rarr;</span>
+                        </a>
+
+                        <a href="index.html?modo=manual" class="bg-white p-8 rounded-2xl shadow-lg border-t-8 border-emerald-600 hover:-translate-y-1 hover:shadow-2xl transition flex flex-col justify-between min-h-[250px]">
+                            <div>
+                                <div class="text-4xl mb-4">🚗</div>
+                                <h2 class="text-2xl font-extrabold text-slate-800 mb-2">Nova Solicitação Manual</h2>
+                                <p class="text-sm text-slate-600">Registrar recarga manualmente para um técnico de campo com upload das 4 fotos obrigatórias.</p>
+                            </div>
+                            <span class="mt-6 inline-block text-emerald-700 font-bold text-sm">Lançar Recarga &rarr;</span>
                         </a>
                     </div>
                 `;
             }
             else if (perfil.perfil === 'ADM') {
-                main.innerHTML = `
-                    <h1 class="text-3xl font-bold mb-8 text-blue-900 border-b border-slate-300 pb-2">Painel Administrativo</h1>
-                    <a href="todas_solicitacoes.html" class="bg-white p-10 rounded-2xl shadow-lg border-t-8 border-blue-400 block hover:scale-105 hover:shadow-2xl transition-all duration-300 cursor-pointer flex flex-col items-center text-center group max-w-2xl mx-auto">
-                        <div class="bg-blue-50 p-6 rounded-full mb-6 group-hover:bg-blue-500 group-hover:text-white transition-colors text-5xl">🔍</div>
-                        <h2 class="text-2xl font-bold mb-3 text-slate-800">Fila de Aprovação (Primária)</h2>
-                        <p class="text-slate-500 text-lg mb-6">Analise as solicitações do campo e anexe os comprovativos.</p>
-                        <span class="inline-block bg-blue-100 text-blue-800 px-6 py-3 rounded-lg font-bold shadow-sm">Acessar Fila &rarr;</span>
-                    </a>
+                cardsHtml = `
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                        <a href="todas_solicitacoes.html" class="bg-white p-8 rounded-2xl shadow-lg border-t-8 border-blue-600 hover:-translate-y-1 hover:shadow-2xl transition flex flex-col justify-between min-h-[250px]">
+                            <div>
+                                <div class="text-4xl mb-4">🔍</div>
+                                <h2 class="text-2xl font-extrabold text-slate-800 mb-2">Fila de Validação ADM</h2>
+                                <p class="text-sm text-slate-600">Conferir fotos, validar parâmetro de 260 KM, preencher Motivo da Recarga e Saldo Solicitado dos seus projetos.</p>
+                            </div>
+                            <span class="mt-6 inline-block text-blue-700 font-bold text-sm">Acessar Solicitações &rarr;</span>
+                        </a>
+
+                        <a href="index.html?modo=manual" class="bg-white p-8 rounded-2xl shadow-lg border-t-8 border-emerald-600 hover:-translate-y-1 hover:shadow-2xl transition flex flex-col justify-between min-h-[250px]">
+                            <div>
+                                <div class="text-4xl mb-4">📝</div>
+                                <h2 class="text-2xl font-extrabold text-slate-800 mb-2">Nova Solicitação Manual</h2>
+                                <p class="text-sm text-slate-600">Preencher formulário em nome do técnico de campo (caso ele esteja sem acesso) subindo as 4 fotos obrigatórias.</p>
+                            </div>
+                            <span class="mt-6 inline-block text-emerald-700 font-bold text-sm">Preencher Manualmente &rarr;</span>
+                        </a>
+                    </div>
                 `;
             }
-            else if (perfil.perfil === 'CAMPO') {
-                window.location.href = 'index.html';
-            }
+
+            main.innerHTML = `
+                <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200 mb-8 flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+                    <div>
+                        <p class="text-xs font-bold uppercase text-slate-400">Usuário Conectado</p>
+                        <h2 class="text-2xl font-black text-slate-800">${perfil.nome} <span class="text-sm font-semibold text-slate-500">(Mat: ${perfil.matricula})</span></h2>
+                    </div>
+                    <div>
+                        <p class="text-xs font-bold uppercase text-slate-400 mb-1">Projetos Vinculados</p>
+                        <div class="flex flex-wrap gap-1.5">${listaProjetos}</div>
+                    </div>
+                </div>
+                ${cardsHtml}
+            `;
         }
+
         carregarPainel();
     </script>
 </body>
