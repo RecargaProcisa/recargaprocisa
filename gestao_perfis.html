@@ -19,45 +19,39 @@
         </div>
     </header>
 
-    <main class="p-6 max-w-6xl mx-auto mt-4 grid grid-cols-1 lg:grid-cols-3 gap-6">
+    <main class="p-6 max-w-7xl mx-auto mt-4 grid grid-cols-1 lg:grid-cols-3 gap-8">
         <div class="bg-white p-6 rounded-xl shadow border border-slate-200 lg:col-span-1 h-fit">
-            <h2 class="text-lg font-bold text-blue-900 mb-4">Novo Perfil</h2>
-            <form id="formPerfil" class="space-y-4">
+            <h2 class="text-xl font-bold text-blue-900 mb-4">Novo Perfil</h2>
+            <form id="formPerfil" class="space-y-5">
                 <div>
-                    <label class="block text-sm font-medium text-slate-700 mb-1">Nome Completo *</label>
-                    <input type="text" id="nome" required placeholder="Nome do colaborador"
-                        class="w-full px-3 py-2 border border-slate-300 rounded focus:ring-2 focus:ring-purple-600 focus:outline-none">
+                    <label class="block text-sm font-semibold text-slate-700 mb-1">Nome Completo *</label>
+                    <input type="text" id="nome" required placeholder="Nome do colaborador" class="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-purple-600 focus:outline-none">
                 </div>
                 <div class="grid grid-cols-2 gap-3">
                     <div>
-                        <label class="block text-sm font-medium text-slate-700 mb-1">Matrícula *</label>
-                        <input type="text" id="matricula" required placeholder="Ex: 12345"
-                            class="w-full px-3 py-2 border border-slate-300 rounded focus:ring-2 focus:ring-purple-600 focus:outline-none">
+                        <label class="block text-sm font-semibold text-slate-700 mb-1">Matrícula *</label>
+                        <input type="text" id="matricula" required placeholder="Ex: 12345" class="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-purple-600 focus:outline-none">
                     </div>
                     <div>
-                        <label class="block text-sm font-medium text-slate-700 mb-1">Senha Inicial *</label>
-                        <input type="password" id="senha" required placeholder="••••••••"
-                            class="w-full px-3 py-2 border border-slate-300 rounded focus:ring-2 focus:ring-purple-600 focus:outline-none">
+                        <label class="block text-sm font-semibold text-slate-700 mb-1">Senha Inicial *</label>
+                        <input type="password" id="senha" required placeholder="••••••••" class="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-purple-600 focus:outline-none">
                     </div>
                 </div>
                 <div>
-                    <label class="block text-sm font-medium text-slate-700 mb-1">Nível de Acesso (Perfil) *</label>
-                    <select id="role" required 
-                        class="w-full px-3 py-2 border border-slate-300 rounded bg-white focus:ring-2 focus:ring-purple-600 focus:outline-none">
+                    <label class="block text-sm font-semibold text-slate-700 mb-1">Nível de Acesso *</label>
+                    <select id="role" required class="w-full px-3 py-2 border border-slate-300 rounded-lg bg-white focus:ring-2 focus:ring-purple-600 focus:outline-none">
                         <option value="ADM">Administrativo (ADM)</option>
                         <option value="GESTAO_CAMPO">Gestão de Campo (Coordenador)</option>
                         <option value="MASTER">Master (Gestão de Recarga)</option>
                     </select>
                 </div>
                 <div>
-                    <label class="block text-sm font-medium text-slate-700 mb-1">Projeto *</label>
-                    <input type="text" id="projeto" required list="listaProjetos" placeholder="Digite para criar ou selecione..." 
-                        class="w-full px-3 py-2 border border-slate-300 rounded focus:ring-2 focus:ring-purple-600 focus:outline-none uppercase">
+                    <label class="block text-sm font-semibold text-slate-700 mb-1">Projeto *</label>
+                    <input type="text" id="projeto" required list="listaProjetos" placeholder="Digite para criar ou selecione..." class="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-purple-600 focus:outline-none uppercase">
                     <datalist id="listaProjetos"></datalist>
                 </div>
 
-                <button type="submit" id="btnSalvar" 
-                    class="w-full bg-purple-700 hover:bg-purple-800 text-white font-semibold py-2.5 rounded transition shadow mt-4">
+                <button type="submit" id="btnSalvar" class="w-full bg-purple-700 hover:bg-purple-800 text-white font-bold py-3 rounded-lg transition shadow-md mt-4 text-lg">
                     Criar Perfil
                 </button>
                 <div id="msgFeedback" class="mt-3 p-3 rounded text-sm hidden"></div>
@@ -65,20 +59,20 @@
         </div>
 
         <div class="bg-white p-6 rounded-xl shadow border border-slate-200 lg:col-span-2 overflow-hidden flex flex-col">
-            <h2 class="text-lg font-bold text-blue-900 mb-4">Perfis Cadastrados</h2>
-            <div class="overflow-x-auto flex-grow">
+            <h2 class="text-xl font-bold text-blue-900 mb-4">Perfis Cadastrados</h2>
+            <div class="overflow-x-auto flex-grow rounded-lg border border-slate-200">
                 <table class="w-full text-left border-collapse">
                     <thead>
                         <tr class="bg-slate-100 border-b border-slate-200 text-slate-600 text-sm">
-                            <th class="p-3">Matrícula</th>
-                            <th class="p-3">Nome</th>
-                            <th class="p-3">Perfil</th>
-                            <th class="p-3">Projeto</th>
-                            <th class="p-3 text-center">Ações</th>
+                            <th class="p-4 font-bold">Matrícula</th>
+                            <th class="p-4 font-bold">Nome</th>
+                            <th class="p-4 font-bold">Perfil</th>
+                            <th class="p-4 font-bold">Projeto</th>
+                            <th class="p-4 text-center font-bold">Ações (Master)</th>
                         </tr>
                     </thead>
                     <tbody id="tabelaPerfis" class="text-sm">
-                        <tr><td colspan="5" class="p-4 text-center text-slate-500">Carregando...</td></tr>
+                        <tr><td colspan="5" class="p-6 text-center text-slate-500 text-lg">Carregando utilizadores...</td></tr>
                     </tbody>
                 </table>
             </div>
@@ -105,7 +99,7 @@
                 const inputProjeto = document.getElementById('projeto');
                 inputProjeto.value = projData ? projData.nome : 'PROJETO VINCULADO';
                 inputProjeto.readOnly = true;
-                inputProjeto.className = "w-full px-3 py-2 border border-slate-200 rounded bg-slate-100 focus:outline-none uppercase text-slate-500";
+                inputProjeto.className = "w-full px-3 py-2 border border-slate-200 rounded-lg bg-slate-100 focus:outline-none uppercase text-slate-500";
             }
             carregarProjetos();
             carregarPerfisCadastrados();
@@ -119,48 +113,58 @@
 
         async function carregarPerfisCadastrados() {
             const tbody = document.getElementById('tabelaPerfis');
-            // Nota: Adicionamos o 'id' no select para poder passá-lo à função de exclusão
             let query = supabaseClient.from('perfis_usuarios').select(`id, matricula, nome, perfil, ativo, projetos (nome)`).order('nome');
             if (usuarioAtual.role === 'GESTAO_CAMPO') query = query.eq('projeto_id', usuarioAtual.projeto_id);
 
             const { data, error } = await query;
             
-            if (error) {
-                tbody.innerHTML = `<tr><td colspan="5" class="p-4 text-center text-red-600 font-bold">Erro: ${error.message}</td></tr>`; return;
-            }
-            if (!data || data.length === 0) {
-                tbody.innerHTML = '<tr><td colspan="5" class="p-4 text-center text-slate-500">Nenhum perfil encontrado.</td></tr>'; return;
-            }
+            if (error) { tbody.innerHTML = `<tr><td colspan="5" class="p-6 text-center text-red-600 font-bold">Erro: ${error.message}</td></tr>`; return; }
+            if (!data || data.length === 0) { tbody.innerHTML = '<tr><td colspan="5" class="p-6 text-center text-slate-500">Nenhum perfil encontrado.</td></tr>'; return; }
 
             tbody.innerHTML = data.map(p => `
-                <tr class="border-b border-slate-100 hover:bg-slate-50 transition">
-                    <td class="p-3 font-semibold text-slate-700">${p.matricula || '-'}</td>
-                    <td class="p-3">${p.nome || '-'}</td>
-                    <td class="p-3"><span class="bg-blue-100 text-blue-800 px-2 py-0.5 rounded text-xs uppercase font-medium">${p.perfil}</span></td>
-                    <td class="p-3 text-slate-600">${p.projetos ? p.projetos.nome : 'Sem Projeto'}</td>
-                    <td class="p-3 text-center">
+                <tr class="border-b border-slate-200 hover:bg-slate-50 transition">
+                    <td class="p-4 font-bold text-slate-700">${p.matricula || '-'}</td>
+                    <td class="p-4 font-medium">${p.nome || '-'}</td>
+                    <td class="p-4"><span class="bg-blue-100 text-blue-800 px-3 py-1 rounded text-xs uppercase font-bold tracking-wide">${p.perfil}</span></td>
+                    <td class="p-4 text-slate-600">${p.projetos ? p.projetos.nome : 'Sem Projeto'}</td>
+                    <td class="p-4 text-center">
                         ${(usuarioAtual.role === 'MASTER' && p.id !== usuarioAtual.id) 
-                            ? `<button onclick="excluirPerfil('${p.id}', '${p.nome}')" class="text-red-600 hover:bg-red-100 px-2 py-1 rounded text-xs font-semibold border border-red-200 transition">Excluir</button>`
-                            : `<span class="text-slate-400 text-xs">-</span>`}
+                            ? `<div class="flex justify-center gap-2">
+                                <button onclick="resetarSenhaPerfil('${p.id}', '${p.nome}')" class="bg-blue-50 text-blue-700 hover:bg-blue-600 hover:text-white px-3 py-1.5 rounded text-xs font-bold border border-blue-200 transition">Resetar Senha</button>
+                                <button onclick="excluirPerfil('${p.id}', '${p.nome}')" class="bg-red-50 text-red-600 hover:bg-red-600 hover:text-white px-3 py-1.5 rounded text-xs font-bold border border-red-200 transition">Excluir</button>
+                               </div>`
+                            : `<span class="text-slate-400 text-sm font-medium">Restrito</span>`}
                     </td>
                 </tr>
             `).join('');
         }
 
-        // Nova Função de Exclusão de Perfil
+        // Função de Resetar Senha
+        window.resetarSenhaPerfil = async function(idUser, nomeUser) {
+            const novaSenha = prompt(`🔄 Digite a nova senha para ${nomeUser} (Mín. 6 caracteres):`);
+            if (!novaSenha) return;
+            if (novaSenha.length < 6) { alert("A senha precisa ter pelo menos 6 caracteres."); return; }
+
+            try {
+                const { data, error } = await supabaseClient.rpc('resetar_senha_admin', { p_user_id: idUser, p_nova_senha: novaSenha });
+                if (error) throw error;
+                if (data && data.sucesso === false) throw new Error(data.erro);
+                alert(`✅ Senha de ${nomeUser} redefinida com sucesso!`);
+            } catch (err) {
+                alert('Erro ao redefinir senha: ' + err.message);
+            }
+        };
+
+        // Função de Excluir Perfil
         window.excluirPerfil = async function(idUser, nomeUser) {
-            const confirmacao = confirm(`ATENÇÃO: Tem a certeza que deseja excluir permanentemente o utilizador ${nomeUser}?`);
+            const confirmacao = confirm(`⚠️ ATENÇÃO: Tem a certeza que deseja excluir PERMANENTEMENTE o utilizador ${nomeUser}?`);
             if (!confirmacao) return;
 
             try {
-                // Chama a nossa nova função SQL passando o ID do usuário
                 const { data, error } = await supabaseClient.rpc('excluir_usuario_admin', { p_user_id: idUser });
-                
                 if (error) throw error;
                 if (data && data.sucesso === false) throw new Error(data.erro);
-
-                alert('Utilizador excluído com sucesso!');
-                carregarPerfisCadastrados(); // Recarrega a tabela
+                carregarPerfisCadastrados();
             } catch (error) {
                 alert('Erro ao excluir utilizador: ' + error.message);
             }
@@ -186,15 +190,14 @@
                 if (error) throw error;
                 if (data && data.sucesso === false) throw new Error(data.erro);
 
-                msg.className = 'mt-3 p-3 rounded text-sm bg-green-100 text-green-800 border border-green-200';
-                msg.innerText = 'Perfil criado com sucesso!';
+                msg.className = 'mt-3 p-4 rounded text-sm font-bold bg-green-100 text-green-800 border border-green-300';
+                msg.innerText = '✅ Perfil criado com sucesso!';
                 document.getElementById('formPerfil').reset();
                 carregarProjetos();
                 carregarPerfisCadastrados();
-
             } catch (error) {
-                msg.className = 'mt-3 p-3 rounded text-sm bg-red-100 text-red-800 border border-red-200';
-                msg.innerText = "Erro ao criar: " + error.message;
+                msg.className = 'mt-3 p-4 rounded text-sm font-bold bg-red-100 text-red-800 border border-red-300';
+                msg.innerText = "❌ Erro ao criar: " + error.message;
             } finally {
                 btn.disabled = false; btn.innerText = 'Criar Perfil'; msg.classList.remove('hidden');
             }
