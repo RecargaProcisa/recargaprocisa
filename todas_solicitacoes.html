@@ -10,7 +10,7 @@
 </head>
 <body class="bg-slate-100 min-h-screen text-slate-800 pb-12">
 
-    <!-- Faixa Azul Padronizada -->
+    <!-- Faixa Azul Padronizada com Assinatura dos Desenvolvedores -->
     <header class="bg-blue-900 text-white px-6 py-4 shadow-lg border-b-4 border-blue-700">
         <div class="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-3 items-center gap-4">
             <div class="flex items-center gap-3 justify-center md:justify-start">
@@ -21,29 +21,130 @@
                 <h1 class="text-2xl font-extrabold tracking-widest uppercase text-white">GESTÃO DE RECARGAS</h1>
                 <p class="text-xs text-blue-200 font-medium tracking-wide mt-0.5">Gestor Luis Manuel Luviano Saldana</p>
             </div>
-            <div class="flex gap-2 justify-center md:justify-end">
-                <a href="index.html?modo=manual" class="text-xs bg-emerald-600 hover:bg-emerald-500 px-3 py-2 rounded font-bold transition shadow">
-                    + Solicitação Manual
-                </a>
-                <a href="painel.html" class="text-xs bg-slate-700 hover:bg-slate-600 px-4 py-2 rounded border border-slate-500 transition font-bold shadow">
-                    &larr; Painel
-                </a>
+            <div class="flex flex-col items-center md:items-end gap-2 shrink-0">
+                <div class="flex gap-2 justify-center md:justify-end">
+                    <a href="index.html?modo=manual" class="text-xs bg-emerald-600 hover:bg-emerald-500 px-3 py-2 rounded font-bold transition shadow">
+                        + Solicitação Manual
+                    </a>
+                    <a href="painel.html" class="text-xs bg-slate-700 hover:bg-slate-600 px-4 py-2 rounded border border-slate-500 transition font-bold shadow">
+                        &larr; Painel
+                    </a>
+                </div>
+                <div class="text-[9px] text-blue-300 md:text-right text-center uppercase font-bold leading-tight mt-1">
+                    <span class="text-blue-400">Desenvolvido por:</span><br>
+                    Leonardo Simoes De Almeida<br>
+                    Keith Christien De Jesus Antunes
+                </div>
             </div>
         </div>
     </header>
 
-    <main class="p-6 max-w-7xl mx-auto">
-        
-        <!-- Bloco de Filtros Inteligentes e Rastreador -->
-        <div class="bg-white p-5 rounded-2xl shadow-md border border-slate-200 mb-6 flex flex-col xl:flex-row justify-between items-center gap-4">
-            
-            <div class="flex flex-wrap gap-2 justify-center xl:justify-start" id="botoesFiltroStatus"></div>
+    <main class="p-4 md:p-6 max-w-7xl mx-auto space-y-4">
 
-            <div class="flex items-center gap-2 w-full xl:w-auto relative shrink-0">
-                <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-slate-400">🔍</div>
-                <input type="text" id="buscaRastreio" oninput="executarRastreio()" placeholder="Rastrear Placa ou Matrícula..."
-                    class="w-full md:w-80 pl-9 pr-3 py-2.5 border-2 border-slate-300 rounded-lg text-sm font-black uppercase tracking-wider focus:outline-none focus:border-blue-600 focus:ring-1 focus:ring-blue-600 placeholder-slate-400 transition">
-                <button onclick="carregarSolicitacoes()" class="bg-slate-200 hover:bg-slate-300 text-slate-700 px-3 py-2.5 rounded-lg text-sm font-bold shadow-sm transition" title="Atualizar Banco de Dados">🔄</button>
+        <!-- BARRA DE MONITORAMENTO DE STORAGE (EXCLUSIVO MASTER - REGRA DOS 85%) -->
+        <div id="painelStorageMaster" class="hidden bg-white p-4 rounded-2xl shadow-sm border border-slate-200 flex flex-col md:flex-row justify-between items-center gap-4">
+            <div class="w-full md:w-2/3">
+                <div class="flex justify-between items-center text-xs font-extrabold mb-1">
+                    <span class="text-slate-700 uppercase tracking-wider">🗄️ Ocupação de Fotos no Servidor (Regra de Expurgo Automático aos 85%)</span>
+                    <span id="textoUsoStorage" class="text-blue-900">Calculando...</span>
+                </div>
+                <div class="w-full bg-slate-200 h-3 rounded-full overflow-hidden">
+                    <div id="barraUsoStorage" class="bg-emerald-500 h-full transition-all duration-500" style="width: 0%"></div>
+                </div>
+            </div>
+            <div class="flex gap-2 shrink-0">
+                <button onclick="executarExpurgoFotos(true)" class="bg-amber-100 hover:bg-amber-200 text-amber-900 border border-amber-300 px-3 py-2 rounded-xl text-xs font-extrabold transition shadow-sm">
+                    🧹 Limpar Fotos Antigas (Manter Dados)
+                </button>
+            </div>
+        </div>
+
+        <!-- ABAS DE FASE DA ESTEIRA -->
+        <div class="bg-white p-4 rounded-2xl shadow-md border border-slate-200 flex flex-col gap-4">
+            <div class="flex flex-wrap justify-between items-center gap-3 border-b border-slate-100 pb-3">
+                <div class="flex flex-wrap gap-2" id="botoesFiltroStatus"></div>
+                <button onclick="carregarSolicitacoes()" class="bg-blue-50 hover:bg-blue-100 text-blue-800 border border-blue-200 px-3.5 py-2 rounded-xl text-xs font-extrabold shadow-sm transition flex items-center gap-1">
+                    🔄 Atualizar Fila
+                </button>
+            </div>
+
+            <!-- PAINEL DE FILTROS AVANÇADOS (DISPONÍVEL PARA TODOS OS USUÁRIOS) -->
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-6 gap-3 pt-1">
+                <!-- Busca por Placa, Matrícula ou Nome -->
+                <div class="lg:col-span-2">
+                    <label class="block text-[10px] font-extrabold uppercase text-slate-500 mb-1">Buscar Placa / Matrícula / Nome</label>
+                    <div class="relative">
+                        <span class="absolute inset-y-0 left-0 pl-3 flex items-center text-slate-400 text-xs">🔍</span>
+                        <input type="text" id="filtroTexto" oninput="renderizarTabela()" placeholder="Ex: ABC1D23, 150246 ou Nome..."
+                            class="w-full pl-8 pr-3 py-2 border border-slate-300 rounded-xl text-xs font-bold uppercase focus:ring-2 focus:ring-blue-600 focus:outline-none">
+                    </div>
+                </div>
+
+                <!-- Filtro por Projeto -->
+                <div>
+                    <label class="block text-[10px] font-extrabold uppercase text-slate-500 mb-1">Projeto</label>
+                    <select id="filtroProjeto" onchange="renderizarTabela()" class="w-full px-2.5 py-2 border border-slate-300 rounded-xl text-xs font-bold bg-white focus:ring-2 focus:ring-blue-600">
+                        <option value="TODOS">Todos os Projetos</option>
+                    </select>
+                </div>
+
+                <!-- Filtro por Status Específico -->
+                <div>
+                    <label class="block text-[10px] font-extrabold uppercase text-slate-500 mb-1">Status Específico</label>
+                    <select id="filtroStatusEspecifico" onchange="renderizarTabela()" class="w-full px-2.5 py-2 border border-slate-300 rounded-xl text-xs font-bold bg-white focus:ring-2 focus:ring-blue-600">
+                        <option value="TODOS">Todos da Aba Atual</option>
+                        <option value="NOVA">🆕 NOVA</option>
+                        <option value="PENDENTE">⚠️ PENDENTE</option>
+                        <option value="AGUARDANDO_GESTAO">🟠 AGUARDANDO COORDENAÇÃO</option>
+                        <option value="AGUARDANDO_RECARGA">🟣 AGUARDANDO RECARGA (MASTER)</option>
+                        <option value="RECARGA_REALIZADA">✅ RECARGA REALIZADA</option>
+                        <option value="RECUSADA">❌ RECUSADA</option>
+                    </select>
+                </div>
+
+                <!-- Filtro por Parâmetro de KM -->
+                <div>
+                    <label class="block text-[10px] font-extrabold uppercase text-slate-500 mb-1">Parâmetro KM (260 km)</label>
+                    <select id="filtroKm" onchange="renderizarTabela()" class="w-full px-2.5 py-2 border border-slate-300 rounded-xl text-xs font-bold bg-white focus:ring-2 focus:ring-blue-600">
+                        <option value="TODOS">Todos os KMs</option>
+                        <option value="NORMAL">✅ Dentro (≥ 260 km)</option>
+                        <option value="ALERTA">🚨 Alerta (< 260 km)</option>
+                    </select>
+                </div>
+
+                <!-- Botão Limpar Filtros -->
+                <div class="flex items-end">
+                    <button onclick="limparFiltros()" class="w-full bg-slate-200 hover:bg-slate-300 text-slate-700 py-2 px-3 rounded-xl text-xs font-extrabold transition">
+                        ✖ Limpar Filtros
+                    </button>
+                </div>
+            </div>
+
+            <!-- Linha 2 de Filtros: Período de Datas + Resumo Financeiro da Seleção -->
+            <div class="grid grid-cols-1 md:grid-cols-12 gap-3 pt-2 border-t border-slate-100 items-center">
+                <div class="md:col-span-5 flex flex-wrap sm:flex-nowrap items-center gap-2">
+                    <div class="w-full sm:w-1/2">
+                        <label class="block text-[10px] font-extrabold uppercase text-slate-500 mb-0.5">Data Inicial</label>
+                        <input type="date" id="filtroDataInicio" onchange="renderizarTabela()" class="w-full px-2.5 py-1.5 border border-slate-300 rounded-lg text-xs font-bold">
+                    </div>
+                    <div class="w-full sm:w-1/2">
+                        <label class="block text-[10px] font-extrabold uppercase text-slate-500 mb-0.5">Data Final</label>
+                        <input type="date" id="filtroDataFim" onchange="renderizarTabela()" class="w-full px-2.5 py-1.5 border border-slate-300 rounded-lg text-xs font-bold">
+                    </div>
+                </div>
+
+                <!-- Indicadores Rápidos do Filtro -->
+                <div class="md:col-span-7 flex flex-wrap justify-end gap-3 text-xs">
+                    <div class="bg-slate-100 px-3 py-1.5 rounded-lg border border-slate-200 font-bold text-slate-700">
+                        Registros: <span id="resumoQtd" class="font-black text-blue-900">0</span>
+                    </div>
+                    <div class="bg-emerald-50 px-3 py-1.5 rounded-lg border border-emerald-200 font-bold text-emerald-900">
+                        Total Solicitado: <span id="resumoSolicitado" class="font-black">R$ 0,00</span>
+                    </div>
+                    <div class="bg-purple-50 px-3 py-1.5 rounded-lg border border-purple-200 font-bold text-purple-900">
+                        Total Liberado: <span id="resumoLiberado" class="font-black">R$ 0,00</span>
+                    </div>
+                </div>
             </div>
         </div>
 
@@ -56,8 +157,8 @@
                             <th class="p-4 font-extrabold whitespace-nowrap">Data / Hora</th>
                             <th class="p-4 font-extrabold">Projeto</th>
                             <th class="p-4 font-extrabold">Colaborador / Mat.</th>
-                            <th class="p-4 font-extrabold">Placa</th>
-                            <th class="p-4 font-extrabold">KM / Saldo</th>
+                            <th class="p-4 font-extrabold text-center">Placa</th>
+                            <th class="p-4 font-extrabold">KM / Saldos</th>
                             <th class="p-4 font-extrabold">Status / Fase Atual</th>
                             <th class="p-4 text-center font-extrabold">Ação</th>
                         </tr>
@@ -117,7 +218,7 @@
                 <h4 class="text-xs font-black uppercase text-purple-900 flex items-center gap-2">💳 Liberação Vale Card (Exclusivo Master)</h4>
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div>
-                        <label class="block text-xs font-bold text-slate-700 mb-1">Saldo Liberado (R$) *</label>
+                        <label class="block text-xs font-bold text-slate-700 mb-1">Saldo Liberado Real (R$) *</label>
                         <input type="number" step="0.01" id="inputSaldoLiberado" placeholder="Confirme ou altere o valor" class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm font-bold bg-white text-purple-700 focus:ring-2 focus:ring-purple-600">
                     </div>
                     <div>
@@ -143,7 +244,8 @@
         let listaCompleta = [];
         let filtroFase = ''; 
         let solicitacaoAberta = null;
-        let modoBypassAtivo = false; 
+        let modoBypassAtivo = false;
+        const LIMITE_STORAGE_MB = 1000; // 1000 MB (1 GB padrão Supabase Free)
 
         async function iniciar() {
             const { data: { user } } = await supabaseClient.auth.getUser();
@@ -157,10 +259,62 @@
             
             if (usuarioLogado.role === 'ADM') filtroFase = 'ESTEIRA_ADM';
             else if (usuarioLogado.role === 'GESTAO_CAMPO') filtroFase = 'ESTEIRA_COORDENADOR';
-            else if (usuarioLogado.role === 'MASTER') filtroFase = 'ESTEIRA_MASTER';
+            else if (usuarioLogado.role === 'MASTER') {
+                filtroFase = 'ESTEIRA_MASTER';
+                verificarStorageMaster();
+            }
 
             renderizarBotoesFiltro();
             await carregarSolicitacoes();
+        }
+
+        // MONITORAMENTO E EXPURGO AUTOMÁTICO 85% (MASTER)
+        async function verificarStorageMaster() {
+            const painel = document.getElementById('painelStorageMaster');
+            painel.classList.remove('hidden');
+
+            try {
+                const { data, error } = await supabaseClient.rpc('status_armazenamento_fotos', { p_limite_total_mb: LIMITE_STORAGE_MB });
+                if (error || !data) return;
+
+                const perc = Math.min(data.percentual || 0, 100);
+                document.getElementById('textoUsoStorage').innerText = `${data.mb_usados} MB / ${data.limite_mb} MB (${data.percentual}% - ${data.total_arquivos} fotos)`;
+                
+                const barra = document.getElementById('barraUsoStorage');
+                barra.style.width = `${perc}%`;
+
+                if (data.percentual >= 85) {
+                    barra.className = 'bg-red-600 h-full transition-all duration-500';
+                    // Dispara limpeza automática ao atingir 85%
+                    await executarExpurgoFotos(false);
+                } else if (data.percentual >= 70) {
+                    barra.className = 'bg-amber-500 h-full transition-all duration-500';
+                } else {
+                    barra.className = 'bg-emerald-500 h-full transition-all duration-500';
+                }
+            } catch (e) {
+                console.error("Erro ao verificar storage:", e);
+            }
+        }
+
+        async function executarExpurgoFotos(forcarManual) {
+            if (forcarManual && !confirm("Deseja remover as fotos físicas das 30 solicitações mais antigas já finalizadas? (Todos os registros financeiros, KMs e nomes continuarão salvos normalmente).")) {
+                return;
+            }
+            try {
+                const { data, error } = await supabaseClient.rpc('limpar_fotos_antigas_85', {
+                    p_limite_total_mb: LIMITE_STORAGE_MB,
+                    p_forcar_limpeza: forcarManual
+                });
+                if (error) throw error;
+                if (data && (data.executado || forcarManual)) {
+                    alert(`🧹 ${data.mensagem}`);
+                    await verificarStorageMaster();
+                    await carregarSolicitacoes();
+                }
+            } catch (err) {
+                alert("Erro ao limpar fotos antigas: " + err.message);
+            }
         }
 
         function renderizarBotoesFiltro() {
@@ -170,21 +324,21 @@
             if (usuarioLogado.role === 'ADM') {
                 botoesHTML = `
                     <button onclick="mudarFase('ESTEIRA_ADM')" class="${filtroFase === 'ESTEIRA_ADM' ? 'bg-blue-900 text-white' : 'bg-slate-100 text-slate-700 hover:bg-slate-200'} px-3 py-2 rounded-lg text-xs font-bold shadow-sm transition">Fila de Ação (Novas/Pendentes)</button>
-                    <button onclick="mudarFase('HISTORICO')" class="${filtroFase === 'HISTORICO' ? 'bg-slate-800 text-white' : 'bg-slate-100 text-slate-700 hover:bg-slate-200'} px-3 py-2 rounded-lg text-xs font-bold shadow-sm transition">Histórico dos Meus Projetos</button>
+                    <button onclick="mudarFase('HISTORICO')" class="${filtroFase === 'HISTORICO' ? 'bg-slate-800 text-white' : 'bg-slate-100 text-slate-700 hover:bg-slate-200'} px-3 py-2 rounded-lg text-xs font-bold shadow-sm transition">Todas dos Meus Projetos</button>
                 `;
             } 
             else if (usuarioLogado.role === 'GESTAO_CAMPO') {
                 botoesHTML = `
                     <button onclick="mudarFase('ESTEIRA_COORDENADOR')" class="${filtroFase === 'ESTEIRA_COORDENADOR' ? 'bg-orange-600 text-white' : 'bg-slate-100 text-slate-700 hover:bg-slate-200'} px-3 py-2 rounded-lg text-xs font-bold shadow-sm transition">Aguard. Coordenação (Meus Projetos)</button>
                     <button onclick="mudarFase('ESTEIRA_COORDENADOR_OUTROS')" class="${filtroFase === 'ESTEIRA_COORDENADOR_OUTROS' ? 'bg-amber-600 text-white' : 'bg-slate-100 text-slate-700 hover:bg-slate-200'} px-3 py-2 rounded-lg text-xs font-bold shadow-sm transition">Visão Global Coord. (Outros Projetos)</button>
-                    <button onclick="mudarFase('ESTEIRA_ADM')" class="${filtroFase === 'ESTEIRA_ADM' ? 'bg-blue-800 text-white ring-2 ring-blue-400' : 'bg-blue-50 text-blue-800 border border-blue-200 hover:bg-blue-100'} px-3 py-2 rounded-lg text-xs font-bold shadow-sm transition flex items-center gap-1">🛠️ Trocar p/ Modo ADM</button>
-                    <button onclick="mudarFase('HISTORICO')" class="${filtroFase === 'HISTORICO' ? 'bg-slate-800 text-white' : 'bg-slate-100 text-slate-700 hover:bg-slate-200'} px-3 py-2 rounded-lg text-xs font-bold shadow-sm transition">Histórico (Meus Proj.)</button>
+                    <button onclick="mudarFase('ESTEIRA_ADM')" class="${filtroFase === 'ESTEIRA_ADM' ? 'bg-blue-800 text-white ring-2 ring-blue-400' : 'bg-blue-50 text-blue-800 border border-blue-200 hover:bg-blue-100'} px-3 py-2 rounded-lg text-xs font-bold shadow-sm transition flex items-center gap-1">🛠️ Modo ADM (Bypass)</button>
+                    <button onclick="mudarFase('HISTORICO')" class="${filtroFase === 'HISTORICO' ? 'bg-slate-800 text-white' : 'bg-slate-100 text-slate-700 hover:bg-slate-200'} px-3 py-2 rounded-lg text-xs font-bold shadow-sm transition">Todas (Meus Proj.)</button>
                 `;
             }
             else if (usuarioLogado.role === 'MASTER') {
                 botoesHTML = `
-                    <button onclick="mudarFase('ESTEIRA_MASTER')" class="${filtroFase === 'ESTEIRA_MASTER' ? 'bg-purple-800 text-white' : 'bg-slate-100 text-slate-700 hover:bg-slate-200'} px-4 py-2.5 rounded-lg text-xs font-bold shadow-sm transition">Fila Vale Card (Aguard. Recarga)</button>
-                    <button onclick="mudarFase('TODAS')" class="${filtroFase === 'TODAS' ? 'bg-slate-800 text-white' : 'bg-slate-100 text-slate-700 hover:bg-slate-200'} px-4 py-2.5 rounded-lg text-xs font-bold shadow-sm transition">Visão Global (Todas)</button>
+                    <button onclick="mudarFase('ESTEIRA_MASTER')" class="${filtroFase === 'ESTEIRA_MASTER' ? 'bg-purple-800 text-white' : 'bg-slate-100 text-slate-700 hover:bg-slate-200'} px-4 py-2 rounded-lg text-xs font-bold shadow-sm transition">Fila Vale Card (Aguard. Recarga)</button>
+                    <button onclick="mudarFase('TODAS')" class="${filtroFase === 'TODAS' ? 'bg-slate-800 text-white' : 'bg-slate-100 text-slate-700 hover:bg-slate-200'} px-4 py-2 rounded-lg text-xs font-bold shadow-sm transition">Visão Global (Todas as Solicitações)</button>
                 `;
             }
             container.innerHTML = botoesHTML;
@@ -193,8 +347,38 @@
         function mudarFase(novaFase) {
             filtroFase = novaFase;
             modoBypassAtivo = (novaFase === 'ESTEIRA_ADM' && usuarioLogado.role === 'GESTAO_CAMPO');
-            document.getElementById('buscaRastreio').value = ''; 
             renderizarBotoesFiltro();
+            renderizarTabela();
+        }
+
+        function popularSelectProjetos() {
+            const selectProj = document.getElementById('filtroProjeto');
+            const valorAtual = selectProj.value;
+            
+            // Extrai projetos únicos presentes nas solicitações que o usuário tem acesso
+            const projetosSet = new Set();
+            listaCompleta.forEach(s => {
+                if (s.projeto) {
+                    if (usuarioLogado.role === 'MASTER' || usuarioLogado.projetos.includes(s.projeto) || s.status === 'AGUARDANDO_GESTAO') {
+                        projetosSet.add(s.projeto);
+                    }
+                }
+            });
+
+            const listaOrdenada = Array.from(projetosSet).sort();
+            selectProj.innerHTML = '<option value="TODOS">Todos os Projetos</option>' + 
+                listaOrdenada.map(p => `<option value="${p}">${p}</option>`).join('');
+            
+            if (listaOrdenada.includes(valorAtual)) selectProj.value = valorAtual;
+        }
+
+        function limparFiltros() {
+            document.getElementById('filtroTexto').value = '';
+            document.getElementById('filtroProjeto').value = 'TODOS';
+            document.getElementById('filtroStatusEspecifico').value = 'TODOS';
+            document.getElementById('filtroKm').value = 'TODOS';
+            document.getElementById('filtroDataInicio').value = '';
+            document.getElementById('filtroDataFim').value = '';
             renderizarTabela();
         }
 
@@ -206,42 +390,83 @@
             
             if (error) { alert('Erro: ' + error.message); return; }
             listaCompleta = data || [];
+            popularSelectProjetos();
             renderizarTabela();
         }
 
-        function executarRastreio() { renderizarTabela(); }
-
         function renderizarTabela() {
             const tbody = document.getElementById('tabelaSolicitacoes');
-            const termoBusca = document.getElementById('buscaRastreio').value.trim().toUpperCase();
             
+            // Valores dos Filtros Combinados
+            const termoBusca = document.getElementById('filtroTexto').value.trim().toUpperCase();
+            const projSelecionado = document.getElementById('filtroProjeto').value;
+            const statusEspecifico = document.getElementById('filtroStatusEspecifico').value;
+            const kmFiltro = document.getElementById('filtroKm').value;
+            const dataInicio = document.getElementById('filtroDataInicio').value;
+            const dataFim = document.getElementById('filtroDataFim').value;
+
             const filtradas = listaCompleta.filter(s => {
+                // 1. Regra de Permissão de Leitura por Perfil
                 let permissaoLeitura = false;
                 if (usuarioLogado.role === 'MASTER') permissaoLeitura = true;
                 else if (usuarioLogado.role === 'ADM') permissaoLeitura = usuarioLogado.projetos.includes(s.projeto);
                 else if (usuarioLogado.role === 'GESTAO_CAMPO') {
                     permissaoLeitura = (s.status === 'AGUARDANDO_GESTAO') || usuarioLogado.projetos.includes(s.projeto);
                 }
-
                 if (!permissaoLeitura) return false;
 
-                if (termoBusca !== '') {
-                    return (s.placa && s.placa.toUpperCase().includes(termoBusca)) || 
-                           (s.matricula && s.matricula.toUpperCase().includes(termoBusca));
+                // 2. Se não houver filtro de texto nem status específico forçado, respeita a Aba (Fase) selecionada
+                const usandoBuscaOuStatusDireto = (termoBusca !== '' || statusEspecifico !== 'TODOS');
+                if (!usandoBuscaOuStatusDireto) {
+                    if (filtroFase === 'ESTEIRA_ADM' && !((s.status === 'NOVA' || s.status === 'PENDENTE') && usuarioLogado.projetos.includes(s.projeto))) return false;
+                    if (filtroFase === 'ESTEIRA_COORDENADOR' && !(s.status === 'AGUARDANDO_GESTAO' && usuarioLogado.projetos.includes(s.projeto))) return false;
+                    if (filtroFase === 'ESTEIRA_COORDENADOR_OUTROS' && !(s.status === 'AGUARDANDO_GESTAO' && !usuarioLogado.projetos.includes(s.projeto))) return false;
+                    if (filtroFase === 'ESTEIRA_MASTER' && s.status !== 'AGUARDANDO_RECARGA') return false;
+                    if (filtroFase === 'HISTORICO' && !usuarioLogado.projetos.includes(s.projeto)) return false;
                 }
 
-                if (filtroFase === 'ESTEIRA_ADM') return (s.status === 'NOVA' || s.status === 'PENDENTE') && usuarioLogado.projetos.includes(s.projeto);
-                if (filtroFase === 'ESTEIRA_COORDENADOR') return s.status === 'AGUARDANDO_GESTAO' && usuarioLogado.projetos.includes(s.projeto);
-                if (filtroFase === 'ESTEIRA_COORDENADOR_OUTROS') return s.status === 'AGUARDANDO_GESTAO' && !usuarioLogado.projetos.includes(s.projeto);
-                if (filtroFase === 'ESTEIRA_MASTER') return s.status === 'AGUARDANDO_RECARGA';
-                if (filtroFase === 'HISTORICO') return s.status !== 'NOVA' && s.status !== 'PENDENTE' && usuarioLogado.projetos.includes(s.projeto);
-                if (filtroFase === 'TODAS') return true;
+                // 3. Filtro de Texto (Placa, Matrícula ou Nome)
+                if (termoBusca !== '') {
+                    const matchPlaca = s.placa && s.placa.toUpperCase().includes(termoBusca);
+                    const matchMat = s.matricula && s.matricula.toUpperCase().includes(termoBusca);
+                    const matchNome = s.nome_solicitante && s.nome_solicitante.toUpperCase().includes(termoBusca);
+                    if (!matchPlaca && !matchMat && !matchNome) return false;
+                }
 
-                return false;
+                // 4. Filtro de Projeto
+                if (projSelecionado !== 'TODOS' && s.projeto !== projSelecionado) return false;
+
+                // 5. Filtro de Status Específico
+                if (statusEspecifico !== 'TODOS' && s.status !== statusEspecifico) return false;
+
+                // 6. Filtro de Parâmetro KM
+                const delta = Number(s.delta_km || (s.km_atual - s.km_ultimo) || 0);
+                if (kmFiltro === 'NORMAL' && delta < 260) return false;
+                if (kmFiltro === 'ALERTA' && delta >= 260) return false;
+
+                // 7. Filtro por Data Inicial e Final
+                if (dataInicio || dataFim) {
+                    const dataRegistro = new Date(s.criado_em).toISOString().split('T')[0];
+                    if (dataInicio && dataRegistro < dataInicio) return false;
+                    if (dataFim && dataRegistro > dataFim) return false;
+                }
+
+                return true;
             });
 
+            // Atualiza totalizadores da barra de filtros
+            let somaSol = 0;
+            let somaLib = 0;
+            filtradas.forEach(item => {
+                somaSol += parseFloat(item.saldo_solicitado) || 0;
+                somaLib += parseFloat(item.saldo_liberado !== null && item.saldo_liberado !== undefined ? item.saldo_liberado : (item.status === 'RECARGA_REALIZADA' ? item.saldo_solicitado : 0)) || 0;
+            });
+            document.getElementById('resumoQtd').innerText = filtradas.length;
+            document.getElementById('resumoSolicitado').innerText = somaSol.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+            document.getElementById('resumoLiberado').innerText = somaLib.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+
             if (filtradas.length === 0) {
-                tbody.innerHTML = `<tr><td colspan="7" class="p-8 text-center text-slate-400 font-semibold">${termoBusca ? 'Nenhuma recarga encontrada na sua alçada.' : 'Fila limpa! Nenhuma solicitação nesta aba.'}</td></tr>`;
+                tbody.innerHTML = `<tr><td colspan="7" class="p-8 text-center text-slate-400 font-semibold">Nenhuma solicitação encontrada para os filtros selecionados.</td></tr>`;
                 return;
             }
 
@@ -270,14 +495,18 @@
                     corStatus = 'bg-red-100 text-red-900 border-red-300';
                 }
 
-                const tagKm = s.delta_km < 260
-                    ? `<span class="bg-red-100 text-red-800 px-2 py-0.5 rounded text-xs font-black">🚨 ${s.delta_km} km (<260)</span>`
-                    : `<span class="bg-emerald-100 text-emerald-800 px-2 py-0.5 rounded text-xs font-bold">✅ ${s.delta_km} km</span>`;
+                const delta = Number(s.delta_km || (s.km_atual - s.km_ultimo) || 0);
+                const tagKm = delta < 260
+                    ? `<span class="bg-red-100 text-red-800 px-2 py-0.5 rounded text-xs font-black">🚨 ${delta} km (<260)</span>`
+                    : `<span class="bg-emerald-100 text-emerald-800 px-2 py-0.5 rounded text-xs font-bold">✅ ${delta} km</span>`;
 
-                // Exibe Saldo Solicitado ou Saldo Liberado (se existir)
                 let tagSaldo = '';
-                if (s.saldo_liberado) tagSaldo = `<div class="font-black text-purple-700 text-xs" title="Liberado pelo Master">Lib: R$ ${s.saldo_liberado}</div>`;
-                else if (s.saldo_solicitado) tagSaldo = `<div class="font-black text-emerald-700 text-xs" title="Solicitado pelo ADM">Sol: R$ ${s.saldo_solicitado}</div>`;
+                if (s.saldo_solicitado) {
+                    tagSaldo += `<div class="font-bold text-slate-600 text-[11px]">Sol: R$ ${s.saldo_solicitado}</div>`;
+                }
+                if (s.saldo_liberado !== null && s.saldo_liberado !== undefined) {
+                    tagSaldo += `<div class="font-black text-purple-700 text-xs">Lib: R$ ${s.saldo_liberado}</div>`;
+                }
 
                 let podeAtuar = false;
                 if (usuarioLogado.role === 'ADM' && (s.status === 'NOVA' || s.status === 'PENDENTE') && usuarioLogado.projetos.includes(s.projeto)) podeAtuar = true;
@@ -294,7 +523,7 @@
                         <td class="p-4 text-[11px] text-slate-500 font-bold whitespace-nowrap leading-tight">${new Date(s.criado_em).toLocaleString('pt-BR').replace(', ','<br>')}</td>
                         <td class="p-4 font-extrabold text-blue-900 text-xs">${s.projeto || '-'}</td>
                         <td class="p-4">
-                            <div class="font-bold text-slate-800 truncate max-w-[150px]" title="${s.nome_solicitante}">${s.nome_solicitante || '-'}</div>
+                            <div class="font-bold text-slate-800 truncate max-w-[160px]" title="${s.nome_solicitante}">${s.nome_solicitante || '-'}</div>
                             <div class="text-xs text-slate-500">Mat: <b>${s.matricula}</b></div>
                         </td>
                         <td class="p-4 font-black tracking-widest text-slate-800 bg-slate-50 text-center rounded">${s.placa || '-'}</td>
@@ -320,11 +549,13 @@
             document.getElementById('modalStatusBadge').innerText = s.status;
             document.getElementById('modalTitulo').innerText = `Placa ${s.placa} — Projeto ${s.projeto}`;
 
+            const delta = Number(s.delta_km || (s.km_atual - s.km_ultimo) || 0);
+
             document.getElementById('modalResumoDados').innerHTML = `
                 <div>
                     <p class="text-slate-400 font-bold uppercase">Solicitante</p>
                     <p class="font-extrabold text-slate-800 text-sm">${s.nome_solicitante}</p>
-                    <p class="text-slate-500 text-xs mt-1">KM: ${s.km_ultimo} &rarr; ${s.km_atual} (<b>${s.delta_km} km</b>)</p>
+                    <p class="text-slate-500 text-xs mt-1">KM: ${s.km_ultimo} &rarr; ${s.km_atual} (<b>${delta} km</b>)</p>
                 </div>
                 <div>
                     <p class="text-slate-400 font-bold uppercase">Validação ADM</p>
@@ -337,37 +568,49 @@
                     <p class="text-slate-400 font-bold uppercase">Aprovações Finais</p>
                     <p class="font-bold text-slate-800 text-xs">Coord: ${s.gestor_aprovador_nome || '-'}</p>
                     <p class="font-bold text-slate-800 text-xs">Master: ${s.recarga_aprovador_nome || '-'}</p>
-                    ${s.saldo_liberado ? `<p class="text-purple-700 font-extrabold mt-1 text-[11px]">Liberado: R$ ${s.saldo_liberado}</p>` : ''}
+                    ${(s.saldo_liberado !== null && s.saldo_liberado !== undefined) ? `<p class="text-purple-700 font-extrabold mt-1 text-[11px]">Liberado: R$ ${s.saldo_liberado}</p>` : ''}
                     ${s.observacao_master ? `<p class="text-purple-800 font-bold mt-0.5 text-[10px] leading-tight">Obs Master: ${s.observacao_master}</p>` : ''}
                     ${s.motivo_pendencia_recusa ? `<p class="text-amber-800 font-bold mt-1 text-[10px] leading-tight">Pendência/Recusa: ${s.motivo_pendencia_recusa}</p>` : ''}
                 </div>
             `;
 
             const fotos = [
-                { t: '1. Painel (KM)', u: s.foto_painel }, { t: '2. Mapa de Bordo', u: s.foto_mapa },
-                { t: '3. Cartão Vale Card', u: s.foto_cartao }, { t: '4. Carro Adesivado', u: s.foto_carro }
+                { t: '1. Painel (KM)', u: s.foto_painel },
+                { t: '2. Mapa de Bordo', u: s.foto_mapa },
+                { t: '3. Cartão Vale Card', u: s.foto_cartao },
+                { t: '4. Carro Adesivado', u: s.foto_carro }
             ];
-            document.getElementById('modalGaleriaFotos').innerHTML = fotos.map(f => `
-                <a href="${f.u}" target="_blank" class="block border border-slate-200 rounded-xl overflow-hidden bg-slate-100 hover:ring-2 hover:ring-blue-600 transition group relative">
-                    <img src="${f.u}" alt="${f.t}" class="w-full h-32 object-cover group-hover:opacity-75 transition">
-                    <div class="absolute inset-x-0 bottom-0 p-2 text-center text-[10px] font-bold text-slate-800 bg-white/90 backdrop-blur">${f.t}</div>
-                </a>
-            `).join('');
 
-            const kmBaixo = s.delta_km < 260;
+            document.getElementById('modalGaleriaFotos').innerHTML = fotos.map(f => {
+                if (!f.u || f.u === 'EXPURGADA_85%') {
+                    return `
+                        <div class="border border-slate-200 rounded-xl bg-slate-100 h-32 flex flex-col items-center justify-center p-3 text-center">
+                            <span class="text-xl mb-1">🧹</span>
+                            <span class="text-[10px] font-extrabold text-slate-500 uppercase">${f.t}</span>
+                            <span class="text-[9px] text-slate-400 font-semibold mt-0.5">Foto antiga expurgada (Regra 85%)</span>
+                        </div>
+                    `;
+                }
+                return `
+                    <a href="${f.u}" target="_blank" class="block border border-slate-200 rounded-xl overflow-hidden bg-slate-100 hover:ring-2 hover:ring-blue-600 transition group relative">
+                        <img src="${f.u}" alt="${f.t}" class="w-full h-32 object-cover group-hover:opacity-75 transition">
+                        <div class="absolute inset-x-0 bottom-0 p-2 text-center text-[10px] font-bold text-slate-800 bg-white/90 backdrop-blur">${f.t}</div>
+                    </a>
+                `;
+            }).join('');
+
+            const kmBaixo = delta < 260;
             document.getElementById('modalAlertaKm').classList.toggle('hidden', !kmBaixo);
             document.getElementById('divJustificativaKm').classList.toggle('hidden', !kmBaixo);
 
-            // Popula os campos com valores existentes (ou pré-carrega o saldo liberado com o que foi solicitado)
             document.getElementById('inputMotivoRecarga').value = s.motivo_recarga || '';
             document.getElementById('inputSaldoSolicitado').value = s.saldo_solicitado || '';
             document.getElementById('inputJustificativaKm').value = s.justificativa_km || '';
             document.getElementById('inputMotivoPendenciaRecusa').value = s.motivo_pendencia_recusa || '';
             
-            document.getElementById('inputSaldoLiberado').value = s.saldo_liberado || s.saldo_solicitado || '';
+            document.getElementById('inputSaldoLiberado').value = (s.saldo_liberado !== null && s.saldo_liberado !== undefined) ? s.saldo_liberado : (s.saldo_solicitado || '');
             document.getElementById('inputObservacaoMaster').value = s.observacao_master || '';
 
-            // Configuração de exibição dos inputs
             const blocoAdm = document.getElementById('blocoCamposAdm');
             const blocoMaster = document.getElementById('blocoCamposMaster');
             const botoes = document.getElementById('modalBotoesAcao');
@@ -379,7 +622,6 @@
             const role = usuarioLogado.role;
             const ehMeuProjeto = usuarioLogado.projetos.includes(s.projeto);
 
-            // Se for Master e a solicitação estiver aguardando ele, mostra o Bloco Master
             if (role === 'MASTER' && s.status === 'AGUARDANDO_RECARGA') {
                 blocoMaster.classList.remove('hidden');
             } else {
@@ -450,13 +692,13 @@
             
             const saldoLib = parseFloat(document.getElementById('inputSaldoLiberado').value);
             const obsMaster = document.getElementById('inputObservacaoMaster').value.trim();
+            const delta = Number(solicitacaoAberta.delta_km || (solicitacaoAberta.km_atual - solicitacaoAberta.km_ultimo) || 0);
 
             if (['AGUARDANDO_GESTAO', 'AGUARDANDO_RECARGA', 'RECARGA_REALIZADA'].includes(novoStatus)) {
                 if (!mRec || isNaN(saldoSol) || saldoSol <= 0) { alert('⚠️ Preencha Motivo da Recarga e Saldo Solicitado!'); return; }
-                if (solicitacaoAberta.delta_km < 260 && !justKm) { alert('🚨 A Justificativa de Exceção KM é obrigatória!'); return; }
+                if (delta < 260 && !justKm) { alert('🚨 A Justificativa de Exceção KM é obrigatória!'); return; }
             }
 
-            // Se o Master for dar a baixa final, precisa ter o saldo liberado
             if (usuarioLogado.role === 'MASTER' && novoStatus === 'RECARGA_REALIZADA') {
                 if (isNaN(saldoLib) || saldoLib <= 0) { alert('⚠️ O preenchimento do Saldo Liberado é obrigatório para a baixa na Vale Card!'); return; }
             }
@@ -473,18 +715,16 @@
                 motivo_pendencia_recusa: mPend
             };
 
-            // Registo dos Campos Específicos do Master
             if (usuarioLogado.role === 'MASTER') {
                 up.saldo_liberado = !isNaN(saldoLib) ? saldoLib : null;
                 up.observacao_master = obsMaster;
             }
 
-            // Registo de Assinaturas (Rastro)
             if (novoStatus === 'AGUARDANDO_GESTAO') {
                 up.adm_aprovador_id = usuarioLogado.id; up.adm_aprovador_nome = usuarioLogado.nome; up.adm_data_aprovacao = new Date().toISOString();
             }
             if (novoStatus === 'AGUARDANDO_RECARGA') {
-                if (!solicitacaoAberta.adm_aprovador_id) { // Bypass
+                if (!solicitacaoAberta.adm_aprovador_id) {
                     up.adm_aprovador_id = usuarioLogado.id; up.adm_aprovador_nome = `${usuarioLogado.nome} (Bypass)`; up.adm_data_aprovacao = new Date().toISOString();
                 }
                 up.gestor_aprovador_id = usuarioLogado.id; up.gestor_aprovador_nome = usuarioLogado.nome; up.gestor_data_aprovacao = new Date().toISOString();
