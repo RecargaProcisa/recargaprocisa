@@ -10,13 +10,25 @@
 </head>
 <body class="bg-slate-100 min-h-screen text-slate-800">
 
+    <!-- Faixa Azul Padronizada com Assinatura dos Desenvolvedores -->
     <header class="bg-blue-900 text-white px-6 py-4 shadow-lg border-b-4 border-blue-700">
-        <div class="max-w-7xl mx-auto flex justify-between items-center">
-            <div>
+        <div class="max-w-7xl mx-auto flex flex-col md:flex-row justify-between items-center gap-4">
+            <div class="flex items-center gap-3">
                 <span class="font-black text-xl tracking-wider text-blue-100">PROCISA</span>
-                <span class="text-xs bg-purple-600 px-3 py-1 rounded-full text-white font-bold ml-3 uppercase tracking-wider">Gestão de Perfis</span>
+                <span class="text-xs bg-purple-600 px-3 py-1 rounded-full text-white font-bold uppercase tracking-wider">Gestão de Perfis</span>
             </div>
-            <a href="painel.html" class="text-xs bg-slate-700 hover:bg-slate-600 px-4 py-2 rounded font-bold transition shadow">&larr; Voltar ao Painel</a>
+            <div class="text-center">
+                <h1 class="text-xl md:text-2xl font-extrabold tracking-widest uppercase text-white">GESTÃO DE RECARGAS</h1>
+                <p class="text-xs text-blue-200 font-medium tracking-wide mt-0.5">Gestor Luis Manuel Luviano Saldana</p>
+            </div>
+            <div class="flex flex-col items-center md:items-end gap-2 shrink-0">
+                <a href="painel.html" class="text-xs bg-slate-700 hover:bg-slate-600 px-4 py-2 rounded font-bold transition shadow">&larr; Voltar ao Painel</a>
+                <div class="text-[9px] text-blue-300 md:text-right text-center uppercase font-bold leading-tight mt-1">
+                    <span class="text-blue-400">Desenvolvido por:</span><br>
+                    Leonardo Simoes De Almeida<br>
+                    Keith Christien De Jesus Antunes
+                </div>
+            </div>
         </div>
     </header>
 
@@ -24,7 +36,10 @@
         
         <!-- FORMULÁRIO DE CADASTRO / EDIÇÃO -->
         <div class="bg-white p-6 rounded-2xl shadow-lg border border-slate-200 lg:col-span-4 h-fit">
-            <h2 class="text-xl font-extrabold text-blue-900 mb-4 border-b pb-2">Cadastrar / Editar Usuário</h2>
+            <div class="flex justify-between items-center border-b pb-2 mb-4">
+                <h2 class="text-xl font-extrabold text-blue-900">Cadastrar / Editar Usuário</h2>
+                <button type="button" onclick="limparFormulario()" class="text-xs text-slate-400 hover:text-slate-700 font-bold">Limpar</button>
+            </div>
             <form id="formPerfil" class="space-y-4">
                 <div>
                     <label class="block text-sm font-bold text-slate-700 mb-1">Nome Completo *</label>
@@ -90,8 +105,8 @@
     <script>
         let usuarioAtual = null;
         let todosProjetosBanco = [];
+        let mapaPerfisCache = {};
 
-        // Fecha o dropdown se clicar fora
         document.addEventListener('click', (e) => {
             const btn = document.getElementById('btnDropdownProjetos');
             const menu = document.getElementById('menuDropdownProjetos');
@@ -110,6 +125,14 @@
                 span.innerText = `${selecionados.length} projeto(s) selecionado(s)`;
                 span.className = 'text-sm text-purple-900 font-bold truncate';
             }
+        }
+
+        function limparFormulario() {
+            document.getElementById('formPerfil').reset();
+            document.getElementById('senha').setAttribute('required', 'true');
+            document.getElementById('senha').placeholder = 'Mín. 6 dígitos';
+            document.querySelectorAll('.chk-projeto').forEach(cb => cb.checked = false);
+            atualizarTextoProjetos();
         }
 
         async function carregarProjetos() {
@@ -142,7 +165,6 @@
             const tbody = document.getElementById('tabelaPerfis');
             let query = supabaseClient.from('perfis_usuarios').select('*').order('nome');
             
-            // REGRA: Coordenador só vê quem ele criou. Master vê todos.
             if (usuarioAtual.role === 'GESTAO_CAMPO') {
                 query = query.eq('criado_por', usuarioAtual.id);
             }
@@ -150,10 +172,10 @@
             const { data, error } = await query;
             if (error) { tbody.innerHTML = `<tr><td colspan="5" class="p-6 text-center text-red-600 font-bold">Erro: ${error.message}</td></tr>`; return; }
 
-            // REGRA (STEALTH MODE): Ocultar o utilizador 00000 de toda a gente, exceto dele próprio
+            // STEALTH MODE: Ocultar o utilizador 00000 de todos, exceto dele próprio
             const perfisVisiveis = (data || []).filter(p => {
                 if (p.matricula === '00000' && usuarioAtual.matricula !== '00000') {
-                    return false; // Esconde a linha do Master 00000
+                    return false;
                 }
                 return true;
             });
@@ -163,11 +185,14 @@
                 return;
             }
 
+            mapaPerfisCache = {};
+            perfisVisiveis.forEach(p => { mapaPerfisCache[p.id] = p; });
+
             tbody.innerHTML = perfisVisiveis.map(p => {
                 const projs = (p.projetos && p.projetos.length > 0) ? p.projetos.map(pr => `<span class="bg-purple-100 text-purple-900 px-1.5 py-0.5 rounded text-[10px] font-bold mr-1 inline-block mb-1 border border-purple-200">${pr}</span>`).join('') : '<span class="text-xs text-slate-400 italic">Global / Sem restrição</span>';
                 
-                // REGRA: Master não pode ser excluído
-                const bloqueiaExclusao = (p.matricula === '00000');
+                // Bloqueia exclusão do Master 00000 ou da própria conta logada
+                const bloqueiaExclusao = (p.matricula === '00000' || p.id === usuarioAtual.id);
                 
                 return `
                 <tr class="hover:bg-slate-50 transition border-b border-slate-100">
@@ -176,14 +201,16 @@
                     <td class="p-3.5"><span class="bg-blue-100 text-blue-900 px-2.5 py-1 rounded text-xs font-extrabold uppercase tracking-wide">${p.perfil}</span></td>
                     <td class="p-3.5 max-w-[200px]">${projs}</td>
                     <td class="p-3.5 text-center flex justify-center gap-1.5">
-                        <button onclick='editar(${JSON.stringify(p)})' class="bg-amber-100 text-amber-800 px-3 py-1.5 rounded text-xs font-bold transition hover:bg-amber-200">Editar</button>
-                        ${!bloqueiaExclusao ? `<button onclick="excluir('${p.id}', '${p.nome}')" class="bg-red-100 text-red-700 px-3 py-1.5 rounded text-xs font-bold transition hover:bg-red-200">Excluir</button>` : ''}
+                        <button onclick="editarPorId('${p.id}')" class="bg-amber-100 text-amber-800 px-3 py-1.5 rounded text-xs font-bold transition hover:bg-amber-200">Editar</button>
+                        ${!bloqueiaExclusao ? `<button onclick="excluirUsuario('${p.id}')" class="bg-red-100 text-red-700 px-3 py-1.5 rounded text-xs font-bold transition hover:bg-red-200">🗑️ Excluir</button>` : ''}
                     </td>
                 </tr>`
             }).join('');
         }
 
-        window.editar = function(p) {
+        window.editarPorId = function(id) {
+            const p = mapaPerfisCache[id];
+            if (!p) return;
             document.getElementById('nome').value = p.nome;
             document.getElementById('matricula').value = p.matricula;
             document.getElementById('role').value = p.perfil;
@@ -195,13 +222,28 @@
             window.scrollTo({ top: 0, behavior: 'smooth' });
         };
 
-        window.excluir = async function(id, nome) {
-            if(!confirm(`⚠️ ATENÇÃO: Deseja excluir PERMANENTEMENTE o usuário ${nome}?`)) return;
+        // EXCLUSÃO DE USUÁRIO CORRIGIDA E VERIFICADA
+        window.excluirUsuario = async function(id) {
+            const p = mapaPerfisCache[id];
+            const nomeExibicao = p ? `${p.nome} (Mat: ${p.matricula})` : id;
+
+            if (!confirm(`⚠️ ATENÇÃO: Deseja excluir PERMANENTEMENTE o acesso do usuário:\n\n${nomeExibicao}?`)) return;
+
             try {
-                await supabaseClient.rpc('excluir_usuario_admin', { p_user_id: id });
-                carregarPerfisCadastrados();
+                // 1ª Tentativa: Via função RPC (remove do auth.users e perfis_usuarios)
+                const { error: rpcError } = await supabaseClient.rpc('excluir_usuario_admin', { p_user_id: id });
+                
+                if (rpcError) {
+                    console.warn("Aviso RPC:", rpcError.message);
+                    // 2ª Tentativa (Fallback): Remove diretamente da tabela perfis_usuarios
+                    const { error: tableError } = await supabaseClient.from('perfis_usuarios').delete().eq('id', id);
+                    if (tableError) throw tableError;
+                }
+
+                alert(`✅ Usuário ${nomeExibicao} excluído com sucesso!`);
+                await carregarPerfisCadastrados();
             } catch (err) {
-                alert("Erro ao excluir: " + err.message);
+                alert("❌ Erro ao excluir usuário: " + err.message + "\n\nCertifique-se de ter executado o script SQL do Passo 1 no Supabase.");
             }
         };
 
@@ -221,7 +263,7 @@
             }
 
             const payload = {
-                p_nome: document.getElementById('nome').value.trim(),
+                p_nome: document.getElementById('nome').value.trim().toUpperCase(),
                 p_matricula: document.getElementById('matricula').value.trim(),
                 p_senha: document.getElementById('senha').value || 'SenhaMantida123', 
                 p_perfil: roleSelecionada,
@@ -230,21 +272,19 @@
             };
 
             try {
-                await supabaseClient.rpc('criar_usuario_admin', payload);
-                if(document.getElementById('senha').value) {
-                    const {data: usr} = await supabaseClient.from('perfis_usuarios').select('id').eq('matricula', payload.p_matricula).single();
-                    if(usr) await supabaseClient.rpc('resetar_senha_admin', { p_user_id: usr.id, p_nova_senha: payload.p_senha });
+                const { error: errCriar } = await supabaseClient.rpc('criar_usuario_admin', payload);
+                if (errCriar) throw errCriar;
+
+                if (document.getElementById('senha').value) {
+                    const { data: usr } = await supabaseClient.from('perfis_usuarios').select('id').eq('matricula', payload.p_matricula).single();
+                    if (usr) await supabaseClient.rpc('resetar_senha_admin', { p_user_id: usr.id, p_nova_senha: payload.p_senha });
                 }
 
                 msg.className = 'mt-3 p-3 rounded-lg text-sm font-bold bg-green-100 text-green-800 border border-green-300 text-center';
                 msg.innerText = '✅ Usuário salvo com sucesso!';
                 
-                document.getElementById('formPerfil').reset();
-                document.getElementById('senha').setAttribute('required', 'true');
-                document.getElementById('senha').placeholder = 'Mín. 6 dígitos';
-                document.querySelectorAll('.chk-projeto').forEach(cb => cb.checked = false);
-                atualizarTextoProjetos();
-                carregarPerfisCadastrados();
+                limparFormulario();
+                await carregarPerfisCadastrados();
             } catch (err) {
                 msg.className = 'mt-3 p-3 rounded-lg text-sm font-bold bg-red-100 text-red-800 border border-red-300 text-center';
                 msg.innerText = '❌ Erro ao salvar: ' + err.message;
@@ -252,6 +292,7 @@
                 btn.disabled = false; btn.innerText = 'Salvar Usuário'; msg.classList.remove('hidden');
             }
         });
+
         checarAcesso();
     </script>
 </body>
