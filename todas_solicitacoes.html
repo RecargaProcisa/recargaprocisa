@@ -64,7 +64,7 @@
             <div class="flex flex-wrap justify-between items-center gap-3 border-b border-slate-100 pb-3">
                 <div class="flex flex-wrap gap-2" id="botoesFiltroStatus"></div>
                 <button onclick="carregarSolicitacoes()" class="bg-blue-50 hover:bg-blue-100 text-blue-800 border border-blue-200 px-3.5 py-2 rounded-xl text-xs font-extrabold shadow-sm transition flex items-center gap-1">
-                    🔄 Atualizar Fila
+                    🔄 Atualizar Fila <span class="text-[9px] font-normal ml-1">(Auto: 5m)</span>
                 </button>
             </div>
 
@@ -245,6 +245,7 @@
         let filtroFase = ''; 
         let solicitacaoAberta = null;
         let modoBypassAtivo = false;
+        let timerAutoAtualizacao = null; // Variável para controlar o temporizador
         const LIMITE_STORAGE_MB = 1000;
 
         async function iniciar() {
@@ -266,6 +267,29 @@
 
             renderizarBotoesFiltro();
             await carregarSolicitacoes();
+
+            // Inicia a rotina de atualização automática
+            iniciarRotinaAtualizacao();
+        }
+
+        // ROTINA DE ATUALIZAÇÃO A CADA 300 SEGUNDOS
+        function iniciarRotinaAtualizacao() {
+            if (timerAutoAtualizacao) clearInterval(timerAutoAtualizacao);
+            
+            timerAutoAtualizacao = setInterval(async () => {
+                // Só atualiza silenciosamente se a janela modal estiver fechada (para não apagar o que o gestor está escrevendo)
+                if (document.getElementById('modalAnalise').classList.contains('hidden')) {
+                    const { data, error } = await supabaseClient.from('solicitacoes_recarga').select('*').order('criado_em', { ascending: false });
+                    
+                    if (!error && data) {
+                        listaCompleta = data;
+                        mapaSolicitacoes = {};
+                        listaCompleta.forEach(s => { mapaSolicitacoes[String(s.id)] = s; });
+                        popularSelectProjetos();
+                        renderizarTabela();
+                    }
+                }
+            }, 300000); // 300.000 ms = 300 segundos = 5 minutos
         }
 
         async function verificarStorageMaster() {
@@ -321,7 +345,6 @@
             return partes.length > 1 ? partes[1].split('?')[0] : null;
         }
 
-        // EXCLUSÃO BLINDADA (Suporta ID numérico ou UUID, apaga fotos e valida remoção real)
         window.excluirRegistroSolicitacao = async function(idStr) {
             const s = mapaSolicitacoes[String(idStr)];
             if (!s) {
@@ -333,7 +356,6 @@
             if (!confirm(msgConfirm)) return;
 
             try {
-                // 1. Remove as 4 fotos pelo cliente do Storage (se existirem)
                 const arquivosParaApagar = [
                     extrairNomeArquivoStorage(s.foto_painel),
                     extrairNomeArquivoStorage(s.foto_mapa),
@@ -345,12 +367,10 @@
                     await supabaseClient.storage.from('fotos_recarga').remove(arquivosParaApagar);
                 }
 
-                // 2. Tenta excluir via RPC universal (p_solicitacao_id como texto)
                 const { data: rpcOk, error: rpcError } = await supabaseClient.rpc('excluir_solicitacao_completa', {
                     p_solicitacao_id: String(s.id)
                 });
 
-                // 3. Garantia adicional: Executa também o DELETE direto na tabela
                 const { error: delError } = await supabaseClient
                     .from('solicitacoes_recarga')
                     .delete()
@@ -360,7 +380,6 @@
                     throw new Error(delError.message || rpcError.message);
                 }
 
-                // Remove imediatamente da lista local e atualiza a tela
                 delete mapaSolicitacoes[String(idStr)];
                 listaCompleta = listaCompleta.filter(item => String(item.id) !== String(idStr));
                 
@@ -573,7 +592,6 @@
 
                 const podeExcluir = verificarPermissaoExclusao(s);
 
-                // ASPAS SIMPLES GARANTIDAS EM TORNO DO ID (Funciona para UUID e Número)
                 const botaoAcao = podeAtuar
                     ? `<button onclick="abrirModalPorId('${idSeguro}')" class="bg-blue-800 hover:bg-blue-900 text-white px-3 py-2 rounded-lg text-xs font-bold shadow transition">Tratar Fila &rarr;</button>`
                     : `<button onclick="abrirModalPorId('${idSeguro}')" class="bg-slate-200 hover:bg-slate-300 text-slate-700 px-3 py-2 rounded-lg text-xs font-bold transition">Visualizar</button>`;
