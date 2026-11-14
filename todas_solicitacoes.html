@@ -176,7 +176,7 @@
                     <span id="modalStatusBadge" class="text-xs font-extrabold px-2.5 py-1 rounded uppercase">STATUS</span>
                     <h2 id="modalTitulo" class="text-xl font-black text-blue-900 mt-2">Análise de Solicitação</h2>
                 </div>
-                <button id="btnExcluirNoModal" onclick="excluirRegistroSolicitacao(solicitacaoAberta.id)" class="hidden bg-red-100 hover:bg-red-200 text-red-700 border border-red-300 px-3 py-1.5 rounded-lg text-xs font-extrabold transition">
+                <button id="btnExcluirNoModal" onclick="if(solicitacaoAberta) excluirRegistroSolicitacao(String(solicitacaoAberta.id))" class="hidden bg-red-600 hover:bg-red-700 text-white px-3.5 py-2 rounded-lg text-xs font-extrabold transition shadow">
                     🗑️ Excluir Registro Permanentemente
                 </button>
             </div>
@@ -315,29 +315,62 @@
             }
         }
 
-        // FUNÇÃO PARA EXCLUIR UM REGISTRO DE RECARGA E SUAS FOTOS
-        window.excluirRegistroSolicitacao = async function(id) {
-            const s = mapaSolicitacoes[id];
-            if (!s) return;
+        function extrairNomeArquivoStorage(url) {
+            if (!url || typeof url !== 'string') return null;
+            const partes = url.split('/fotos_recarga/');
+            return partes.length > 1 ? partes[1].split('?')[0] : null;
+        }
 
-            const msgConfirm = `⚠️ ATENÇÃO: Deseja EXCLUIR PERMANENTEMENTE este registro de solicitação?\n\nColaborador: ${s.nome_solicitante} (Mat: ${s.matricula})\nPlaca: ${s.placa}\nProjeto: ${s.projeto}\n\nEsta ação apagará o registro e as 4 fotos do servidor e não pode ser desfeita.`;
+        // EXCLUSÃO BLINDADA (Suporta ID numérico ou UUID, apaga fotos e valida remoção real)
+        window.excluirRegistroSolicitacao = async function(idStr) {
+            const s = mapaSolicitacoes[String(idStr)];
+            if (!s) {
+                alert("Registro não localizado na memória. Atualize a página.");
+                return;
+            }
+
+            const msgConfirm = `⚠️ ATENÇÃO: Deseja EXCLUIR PERMANENTEMENTE este registro de solicitação?\n\nColaborador: ${s.nome_solicitante} (Mat: ${s.matricula})\nPlaca: ${s.placa}\nProjeto: ${s.projeto}\n\nEsta ação apagará o registro e as 4 fotos do servidor.`;
             if (!confirm(msgConfirm)) return;
 
             try {
-                // Tenta usar a função RPC que já limpa as 4 fotos do Storage
-                const { error: rpcError } = await supabaseClient.rpc('excluir_solicitacao_completa', { p_solicitacao_id: id });
-                
-                if (rpcError) {
-                    // Fallback direto na tabela caso a função RPC ainda não tenha sido criada
-                    const { error: delError } = await supabaseClient.from('solicitacoes_recarga').delete().eq('id', id);
-                    if (delError) throw delError;
+                // 1. Remove as 4 fotos pelo cliente do Storage (se existirem)
+                const arquivosParaApagar = [
+                    extrairNomeArquivoStorage(s.foto_painel),
+                    extrairNomeArquivoStorage(s.foto_mapa),
+                    extrairNomeArquivoStorage(s.foto_cartao),
+                    extrairNomeArquivoStorage(s.foto_carro)
+                ].filter(Boolean);
+
+                if (arquivosParaApagar.length > 0) {
+                    await supabaseClient.storage.from('fotos_recarga').remove(arquivosParaApagar);
                 }
 
+                // 2. Tenta excluir via RPC universal (p_solicitacao_id como texto)
+                const { data: rpcOk, error: rpcError } = await supabaseClient.rpc('excluir_solicitacao_completa', {
+                    p_solicitacao_id: String(s.id)
+                });
+
+                // 3. Garantia adicional: Executa também o DELETE direto na tabela
+                const { error: delError } = await supabaseClient
+                    .from('solicitacoes_recarga')
+                    .delete()
+                    .eq('id', s.id);
+
+                if (delError && rpcError) {
+                    throw new Error(delError.message || rpcError.message);
+                }
+
+                // Remove imediatamente da lista local e atualiza a tela
+                delete mapaSolicitacoes[String(idStr)];
+                listaCompleta = listaCompleta.filter(item => String(item.id) !== String(idStr));
+                
                 fecharModal();
-                await carregarSolicitacoes();
+                renderizarTabela();
+                alert("✅ Registro excluído com sucesso!");
+
                 if (usuarioLogado.role === 'MASTER') verificarStorageMaster();
             } catch (err) {
-                alert("❌ Erro ao excluir solicitação: " + err.message);
+                alert("❌ Erro ao excluir solicitação: " + err.message + "\n\nExecute o script SQL do Passo 1 no Supabase para liberar a permissão de DELETE.");
             }
         };
 
@@ -414,7 +447,7 @@
             if (error) { alert('Erro: ' + error.message); return; }
             listaCompleta = data || [];
             mapaSolicitacoes = {};
-            listaCompleta.forEach(s => { mapaSolicitacoes[s.id] = s; });
+            listaCompleta.forEach(s => { mapaSolicitacoes[String(s.id)] = s; });
 
             popularSelectProjetos();
             renderizarTabela();
@@ -423,7 +456,7 @@
         function verificarPermissaoExclusao(s) {
             if (usuarioLogado.role === 'MASTER') return true;
             if (usuarioLogado.role === 'GESTAO_CAMPO' && usuarioLogado.projetos.includes(s.projeto)) return true;
-            if (usuarioLogado.role === 'ADM' && (s.status === 'NOVA' || s.status === 'PENDENTE') && usuarioLogado.projetos.includes(s.projeto)) return true;
+            if (usuarioLogado.role === 'ADM' && usuarioLogado.projetos.includes(s.projeto)) return true;
             return false;
         }
 
@@ -494,6 +527,7 @@
             }
 
             tbody.innerHTML = filtradas.map(s => {
+                const idSeguro = String(s.id);
                 let faseParada = '';
                 let corStatus = 'bg-slate-100 text-slate-800';
                 
@@ -539,12 +573,13 @@
 
                 const podeExcluir = verificarPermissaoExclusao(s);
 
+                // ASPAS SIMPLES GARANTIDAS EM TORNO DO ID (Funciona para UUID e Número)
                 const botaoAcao = podeAtuar
-                    ? `<button onclick="abrirModalPorId(${s.id})" class="bg-blue-800 hover:bg-blue-900 text-white px-3 py-2 rounded-lg text-xs font-bold shadow transition">Tratar Fila &rarr;</button>`
-                    : `<button onclick="abrirModalPorId(${s.id})" class="bg-slate-200 hover:bg-slate-300 text-slate-700 px-3 py-2 rounded-lg text-xs font-bold transition">Visualizar</button>`;
+                    ? `<button onclick="abrirModalPorId('${idSeguro}')" class="bg-blue-800 hover:bg-blue-900 text-white px-3 py-2 rounded-lg text-xs font-bold shadow transition">Tratar Fila &rarr;</button>`
+                    : `<button onclick="abrirModalPorId('${idSeguro}')" class="bg-slate-200 hover:bg-slate-300 text-slate-700 px-3 py-2 rounded-lg text-xs font-bold transition">Visualizar</button>`;
 
                 const botaoExcluir = podeExcluir
-                    ? `<button onclick="excluirRegistroSolicitacao(${s.id})" title="Excluir Registro" class="bg-red-100 hover:bg-red-200 text-red-700 px-2.5 py-2 rounded-lg text-xs font-bold transition">🗑️</button>`
+                    ? `<button onclick="excluirRegistroSolicitacao('${idSeguro}')" title="Excluir Registro" class="bg-red-100 hover:bg-red-200 text-red-700 px-2.5 py-2 rounded-lg text-xs font-bold transition">🗑️</button>`
                     : '';
 
                 return `
@@ -575,15 +610,14 @@
             }).join('');
         }
 
-        window.abrirModalPorId = function(id) {
-            const s = mapaSolicitacoes[id];
+        window.abrirModalPorId = function(idStr) {
+            const s = mapaSolicitacoes[String(idStr)];
             if (!s) return;
             solicitacaoAberta = s;
             document.getElementById('modalAnalise').classList.remove('hidden');
             document.getElementById('modalStatusBadge').innerText = s.status;
             document.getElementById('modalTitulo').innerText = `Placa ${s.placa} — Projeto ${s.projeto}`;
 
-            // Mostra ou esconde o botão de excluir dentro do Modal conforme permissão
             const btnExcluirModal = document.getElementById('btnExcluirNoModal');
             if (verificarPermissaoExclusao(s)) {
                 btnExcluirModal.classList.remove('hidden');
