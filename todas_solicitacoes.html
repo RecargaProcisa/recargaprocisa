@@ -70,7 +70,6 @@
 
             <!-- PAINEL DE FILTROS AVANÇADOS (DISPONÍVEL PARA TODOS OS USUÁRIOS) -->
             <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-6 gap-3 pt-1">
-                <!-- Busca por Placa, Matrícula ou Nome -->
                 <div class="lg:col-span-2">
                     <label class="block text-[10px] font-extrabold uppercase text-slate-500 mb-1">Buscar Placa / Matrícula / Nome</label>
                     <div class="relative">
@@ -80,7 +79,6 @@
                     </div>
                 </div>
 
-                <!-- Filtro por Projeto -->
                 <div>
                     <label class="block text-[10px] font-extrabold uppercase text-slate-500 mb-1">Projeto</label>
                     <select id="filtroProjeto" onchange="renderizarTabela()" class="w-full px-2.5 py-2 border border-slate-300 rounded-xl text-xs font-bold bg-white focus:ring-2 focus:ring-blue-600">
@@ -88,7 +86,6 @@
                     </select>
                 </div>
 
-                <!-- Filtro por Status Específico -->
                 <div>
                     <label class="block text-[10px] font-extrabold uppercase text-slate-500 mb-1">Status Específico</label>
                     <select id="filtroStatusEspecifico" onchange="renderizarTabela()" class="w-full px-2.5 py-2 border border-slate-300 rounded-xl text-xs font-bold bg-white focus:ring-2 focus:ring-blue-600">
@@ -102,7 +99,6 @@
                     </select>
                 </div>
 
-                <!-- Filtro por Parâmetro de KM -->
                 <div>
                     <label class="block text-[10px] font-extrabold uppercase text-slate-500 mb-1">Parâmetro KM (260 km)</label>
                     <select id="filtroKm" onchange="renderizarTabela()" class="w-full px-2.5 py-2 border border-slate-300 rounded-xl text-xs font-bold bg-white focus:ring-2 focus:ring-blue-600">
@@ -112,7 +108,6 @@
                     </select>
                 </div>
 
-                <!-- Botão Limpar Filtros -->
                 <div class="flex items-end">
                     <button onclick="limparFiltros()" class="w-full bg-slate-200 hover:bg-slate-300 text-slate-700 py-2 px-3 rounded-xl text-xs font-extrabold transition">
                         ✖ Limpar Filtros
@@ -133,7 +128,6 @@
                     </div>
                 </div>
 
-                <!-- Indicadores Rápidos do Filtro -->
                 <div class="md:col-span-7 flex flex-wrap justify-end gap-3 text-xs">
                     <div class="bg-slate-100 px-3 py-1.5 rounded-lg border border-slate-200 font-bold text-slate-700">
                         Registros: <span id="resumoQtd" class="font-black text-blue-900">0</span>
@@ -160,7 +154,7 @@
                             <th class="p-4 font-extrabold text-center">Placa</th>
                             <th class="p-4 font-extrabold">KM / Saldos</th>
                             <th class="p-4 font-extrabold">Status / Fase Atual</th>
-                            <th class="p-4 text-center font-extrabold">Ação</th>
+                            <th class="p-4 text-center font-extrabold">Ações</th>
                         </tr>
                     </thead>
                     <tbody id="tabelaSolicitacoes" class="text-sm divide-y divide-slate-200">
@@ -177,9 +171,14 @@
             
             <button onclick="fecharModal()" class="absolute top-4 right-4 text-slate-400 hover:text-slate-800 text-3xl font-black">&times;</button>
             
-            <div class="border-b pb-3 mb-4 pr-8">
-                <span id="modalStatusBadge" class="text-xs font-extrabold px-2.5 py-1 rounded uppercase">STATUS</span>
-                <h2 id="modalTitulo" class="text-xl font-black text-blue-900 mt-2">Análise de Solicitação</h2>
+            <div class="border-b pb-3 mb-4 pr-8 flex justify-between items-start flex-wrap gap-2">
+                <div>
+                    <span id="modalStatusBadge" class="text-xs font-extrabold px-2.5 py-1 rounded uppercase">STATUS</span>
+                    <h2 id="modalTitulo" class="text-xl font-black text-blue-900 mt-2">Análise de Solicitação</h2>
+                </div>
+                <button id="btnExcluirNoModal" onclick="excluirRegistroSolicitacao(solicitacaoAberta.id)" class="hidden bg-red-100 hover:bg-red-200 text-red-700 border border-red-300 px-3 py-1.5 rounded-lg text-xs font-extrabold transition">
+                    🗑️ Excluir Registro Permanentemente
+                </button>
             </div>
 
             <!-- Resumo de Dados e Rastro de Auditoria -->
@@ -242,10 +241,11 @@
     <script>
         let usuarioLogado = null;
         let listaCompleta = [];
+        let mapaSolicitacoes = {};
         let filtroFase = ''; 
         let solicitacaoAberta = null;
         let modoBypassAtivo = false;
-        const LIMITE_STORAGE_MB = 1000; // 1000 MB (1 GB padrão Supabase Free)
+        const LIMITE_STORAGE_MB = 1000;
 
         async function iniciar() {
             const { data: { user } } = await supabaseClient.auth.getUser();
@@ -268,7 +268,6 @@
             await carregarSolicitacoes();
         }
 
-        // MONITORAMENTO E EXPURGO AUTOMÁTICO 85% (MASTER)
         async function verificarStorageMaster() {
             const painel = document.getElementById('painelStorageMaster');
             painel.classList.remove('hidden');
@@ -285,7 +284,6 @@
 
                 if (data.percentual >= 85) {
                     barra.className = 'bg-red-600 h-full transition-all duration-500';
-                    // Dispara limpeza automática ao atingir 85%
                     await executarExpurgoFotos(false);
                 } else if (data.percentual >= 70) {
                     barra.className = 'bg-amber-500 h-full transition-all duration-500';
@@ -316,6 +314,32 @@
                 alert("Erro ao limpar fotos antigas: " + err.message);
             }
         }
+
+        // FUNÇÃO PARA EXCLUIR UM REGISTRO DE RECARGA E SUAS FOTOS
+        window.excluirRegistroSolicitacao = async function(id) {
+            const s = mapaSolicitacoes[id];
+            if (!s) return;
+
+            const msgConfirm = `⚠️ ATENÇÃO: Deseja EXCLUIR PERMANENTEMENTE este registro de solicitação?\n\nColaborador: ${s.nome_solicitante} (Mat: ${s.matricula})\nPlaca: ${s.placa}\nProjeto: ${s.projeto}\n\nEsta ação apagará o registro e as 4 fotos do servidor e não pode ser desfeita.`;
+            if (!confirm(msgConfirm)) return;
+
+            try {
+                // Tenta usar a função RPC que já limpa as 4 fotos do Storage
+                const { error: rpcError } = await supabaseClient.rpc('excluir_solicitacao_completa', { p_solicitacao_id: id });
+                
+                if (rpcError) {
+                    // Fallback direto na tabela caso a função RPC ainda não tenha sido criada
+                    const { error: delError } = await supabaseClient.from('solicitacoes_recarga').delete().eq('id', id);
+                    if (delError) throw delError;
+                }
+
+                fecharModal();
+                await carregarSolicitacoes();
+                if (usuarioLogado.role === 'MASTER') verificarStorageMaster();
+            } catch (err) {
+                alert("❌ Erro ao excluir solicitação: " + err.message);
+            }
+        };
 
         function renderizarBotoesFiltro() {
             const container = document.getElementById('botoesFiltroStatus');
@@ -355,7 +379,6 @@
             const selectProj = document.getElementById('filtroProjeto');
             const valorAtual = selectProj.value;
             
-            // Extrai projetos únicos presentes nas solicitações que o usuário tem acesso
             const projetosSet = new Set();
             listaCompleta.forEach(s => {
                 if (s.projeto) {
@@ -390,14 +413,23 @@
             
             if (error) { alert('Erro: ' + error.message); return; }
             listaCompleta = data || [];
+            mapaSolicitacoes = {};
+            listaCompleta.forEach(s => { mapaSolicitacoes[s.id] = s; });
+
             popularSelectProjetos();
             renderizarTabela();
+        }
+
+        function verificarPermissaoExclusao(s) {
+            if (usuarioLogado.role === 'MASTER') return true;
+            if (usuarioLogado.role === 'GESTAO_CAMPO' && usuarioLogado.projetos.includes(s.projeto)) return true;
+            if (usuarioLogado.role === 'ADM' && (s.status === 'NOVA' || s.status === 'PENDENTE') && usuarioLogado.projetos.includes(s.projeto)) return true;
+            return false;
         }
 
         function renderizarTabela() {
             const tbody = document.getElementById('tabelaSolicitacoes');
             
-            // Valores dos Filtros Combinados
             const termoBusca = document.getElementById('filtroTexto').value.trim().toUpperCase();
             const projSelecionado = document.getElementById('filtroProjeto').value;
             const statusEspecifico = document.getElementById('filtroStatusEspecifico').value;
@@ -406,7 +438,6 @@
             const dataFim = document.getElementById('filtroDataFim').value;
 
             const filtradas = listaCompleta.filter(s => {
-                // 1. Regra de Permissão de Leitura por Perfil
                 let permissaoLeitura = false;
                 if (usuarioLogado.role === 'MASTER') permissaoLeitura = true;
                 else if (usuarioLogado.role === 'ADM') permissaoLeitura = usuarioLogado.projetos.includes(s.projeto);
@@ -415,7 +446,6 @@
                 }
                 if (!permissaoLeitura) return false;
 
-                // 2. Se não houver filtro de texto nem status específico forçado, respeita a Aba (Fase) selecionada
                 const usandoBuscaOuStatusDireto = (termoBusca !== '' || statusEspecifico !== 'TODOS');
                 if (!usandoBuscaOuStatusDireto) {
                     if (filtroFase === 'ESTEIRA_ADM' && !((s.status === 'NOVA' || s.status === 'PENDENTE') && usuarioLogado.projetos.includes(s.projeto))) return false;
@@ -425,7 +455,6 @@
                     if (filtroFase === 'HISTORICO' && !usuarioLogado.projetos.includes(s.projeto)) return false;
                 }
 
-                // 3. Filtro de Texto (Placa, Matrícula ou Nome)
                 if (termoBusca !== '') {
                     const matchPlaca = s.placa && s.placa.toUpperCase().includes(termoBusca);
                     const matchMat = s.matricula && s.matricula.toUpperCase().includes(termoBusca);
@@ -433,18 +462,13 @@
                     if (!matchPlaca && !matchMat && !matchNome) return false;
                 }
 
-                // 4. Filtro de Projeto
                 if (projSelecionado !== 'TODOS' && s.projeto !== projSelecionado) return false;
-
-                // 5. Filtro de Status Específico
                 if (statusEspecifico !== 'TODOS' && s.status !== statusEspecifico) return false;
 
-                // 6. Filtro de Parâmetro KM
                 const delta = Number(s.delta_km || (s.km_atual - s.km_ultimo) || 0);
                 if (kmFiltro === 'NORMAL' && delta < 260) return false;
                 if (kmFiltro === 'ALERTA' && delta >= 260) return false;
 
-                // 7. Filtro por Data Inicial e Final
                 if (dataInicio || dataFim) {
                     const dataRegistro = new Date(s.criado_em).toISOString().split('T')[0];
                     if (dataInicio && dataRegistro < dataInicio) return false;
@@ -454,7 +478,6 @@
                 return true;
             });
 
-            // Atualiza totalizadores da barra de filtros
             let somaSol = 0;
             let somaLib = 0;
             filtradas.forEach(item => {
@@ -514,9 +537,15 @@
                 if (usuarioLogado.role === 'GESTAO_CAMPO' && modoBypassAtivo && (s.status === 'NOVA' || s.status === 'PENDENTE') && usuarioLogado.projetos.includes(s.projeto)) podeAtuar = true;
                 if (usuarioLogado.role === 'MASTER' && s.status === 'AGUARDANDO_RECARGA') podeAtuar = true;
 
+                const podeExcluir = verificarPermissaoExclusao(s);
+
                 const botaoAcao = podeAtuar
-                    ? `<button onclick='abrirModal(${JSON.stringify(s)})' class="bg-blue-800 hover:bg-blue-900 text-white px-4 py-2.5 rounded-lg text-xs font-bold shadow transition w-full">Tratar Fila &rarr;</button>`
-                    : `<button onclick='abrirModal(${JSON.stringify(s)})' class="bg-slate-200 hover:bg-slate-300 text-slate-700 px-4 py-2.5 rounded-lg text-xs font-bold transition w-full">Visualizar / Rastro</button>`;
+                    ? `<button onclick="abrirModalPorId(${s.id})" class="bg-blue-800 hover:bg-blue-900 text-white px-3 py-2 rounded-lg text-xs font-bold shadow transition">Tratar Fila &rarr;</button>`
+                    : `<button onclick="abrirModalPorId(${s.id})" class="bg-slate-200 hover:bg-slate-300 text-slate-700 px-3 py-2 rounded-lg text-xs font-bold transition">Visualizar</button>`;
+
+                const botaoExcluir = podeExcluir
+                    ? `<button onclick="excluirRegistroSolicitacao(${s.id})" title="Excluir Registro" class="bg-red-100 hover:bg-red-200 text-red-700 px-2.5 py-2 rounded-lg text-xs font-bold transition">🗑️</button>`
+                    : '';
 
                 return `
                     <tr class="hover:bg-slate-50 transition border-b border-slate-100">
@@ -536,18 +565,31 @@
                             <div class="text-[10px] font-bold text-slate-500 uppercase tracking-wider">${faseParada}</div>
                         </td>
                         <td class="p-4 text-center">
-                            ${botaoAcao}
+                            <div class="flex items-center justify-center gap-1.5">
+                                ${botaoAcao}
+                                ${botaoExcluir}
+                            </div>
                         </td>
                     </tr>
                 `;
             }).join('');
         }
 
-        window.abrirModal = function(s) {
+        window.abrirModalPorId = function(id) {
+            const s = mapaSolicitacoes[id];
+            if (!s) return;
             solicitacaoAberta = s;
             document.getElementById('modalAnalise').classList.remove('hidden');
             document.getElementById('modalStatusBadge').innerText = s.status;
             document.getElementById('modalTitulo').innerText = `Placa ${s.placa} — Projeto ${s.projeto}`;
+
+            // Mostra ou esconde o botão de excluir dentro do Modal conforme permissão
+            const btnExcluirModal = document.getElementById('btnExcluirNoModal');
+            if (verificarPermissaoExclusao(s)) {
+                btnExcluirModal.classList.remove('hidden');
+            } else {
+                btnExcluirModal.classList.add('hidden');
+            }
 
             const delta = Number(s.delta_km || (s.km_atual - s.km_ultimo) || 0);
 
