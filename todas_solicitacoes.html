@@ -10,9 +10,9 @@
 </head>
 <body class="bg-slate-100 min-h-screen text-slate-800 pb-12">
 
-    <!-- Faixa Azul Padronizada com Assinatura dos Desenvolvedores -->
+    <!-- Faixa Azul Padronizada 100% Tela -->
     <header class="bg-blue-900 text-white px-6 py-4 shadow-lg border-b-4 border-blue-700">
-        <div class="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-3 items-center gap-4">
+        <div class="w-full grid grid-cols-1 md:grid-cols-3 items-center gap-4">
             <div class="flex items-center gap-3 justify-center md:justify-start">
                 <span class="font-black text-xl tracking-wider text-blue-100">PROCISA</span>
                 <span id="badgePerfilHeader" class="text-xs bg-blue-700 px-3 py-1 rounded-full text-white font-bold uppercase tracking-wide">...</span>
@@ -39,7 +39,8 @@
         </div>
     </header>
 
-    <main class="p-4 md:p-6 max-w-7xl mx-auto space-y-4">
+    <!-- Main 100% Tela -->
+    <main class="p-4 md:p-6 w-full space-y-4">
 
         <!-- BARRA DE MONITORAMENTO DE STORAGE (EXCLUSIVO MASTER - REGRA DOS 85%) -->
         <div id="painelStorageMaster" class="hidden bg-white p-4 rounded-2xl shadow-sm border border-slate-200 flex flex-col md:flex-row justify-between items-center gap-4">
@@ -68,7 +69,7 @@
                 </button>
             </div>
 
-            <!-- PAINEL DE FILTROS AVANÇADOS (DISPONÍVEL PARA TODOS OS USUÁRIOS) -->
+            <!-- PAINEL DE FILTROS AVANÇADOS -->
             <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-6 gap-3 pt-1">
                 <div class="lg:col-span-2">
                     <label class="block text-[10px] font-extrabold uppercase text-slate-500 mb-1">Buscar Placa / Matrícula / Nome</label>
@@ -115,7 +116,7 @@
                 </div>
             </div>
 
-            <!-- Linha 2 de Filtros: Período de Datas + Resumo Financeiro da Seleção -->
+            <!-- Linha 2 de Filtros: Período de Datas + Resumo Financeiro -->
             <div class="grid grid-cols-1 md:grid-cols-12 gap-3 pt-2 border-t border-slate-100 items-center">
                 <div class="md:col-span-5 flex flex-wrap sm:flex-nowrap items-center gap-2">
                     <div class="w-full sm:w-1/2">
@@ -245,7 +246,7 @@
         let filtroFase = ''; 
         let solicitacaoAberta = null;
         let modoBypassAtivo = false;
-        let timerAutoAtualizacao = null; // Variável para controlar o temporizador
+        let timerAutoAtualizacao = null;
         const LIMITE_STORAGE_MB = 1000;
 
         async function iniciar() {
@@ -267,20 +268,15 @@
 
             renderizarBotoesFiltro();
             await carregarSolicitacoes();
-
-            // Inicia a rotina de atualização automática
             iniciarRotinaAtualizacao();
         }
 
-        // ROTINA DE ATUALIZAÇÃO A CADA 300 SEGUNDOS
         function iniciarRotinaAtualizacao() {
             if (timerAutoAtualizacao) clearInterval(timerAutoAtualizacao);
             
             timerAutoAtualizacao = setInterval(async () => {
-                // Só atualiza silenciosamente se a janela modal estiver fechada (para não apagar o que o gestor está escrevendo)
                 if (document.getElementById('modalAnalise').classList.contains('hidden')) {
                     const { data, error } = await supabaseClient.from('solicitacoes_recarga').select('*').order('criado_em', { ascending: false });
-                    
                     if (!error && data) {
                         listaCompleta = data;
                         mapaSolicitacoes = {};
@@ -289,7 +285,7 @@
                         renderizarTabela();
                     }
                 }
-            }, 300000); // 300.000 ms = 300 segundos = 5 minutos
+            }, 300000); 
         }
 
         async function verificarStorageMaster() {
@@ -389,7 +385,7 @@
 
                 if (usuarioLogado.role === 'MASTER') verificarStorageMaster();
             } catch (err) {
-                alert("❌ Erro ao excluir solicitação: " + err.message + "\n\nExecute o script SQL do Passo 1 no Supabase para liberar a permissão de DELETE.");
+                alert("❌ Erro ao excluir solicitação: " + err.message);
             }
         };
 
